@@ -1,1 +1,1 @@
-package goscrape
+package fetcher
