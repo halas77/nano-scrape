@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"fmt"
 	"strings"
 
 	"golang.org/x/net/html"
@@ -34,22 +33,43 @@ type Traverser interface {
 	FindOne()
 }
 
-var count uint8 = 0
+func hasIntersection(params map[string]any, attributes []html.Attribute, isStrict bool) bool {
+	if params == nil {
+		return true
+	}
 
-func traverse(n *html.Node, name string, nodes *[]Document, limit int8) uint8 {
-	count++
-	fmt.Println("count", count, "Tag", n.Data)
-
-	if n.Type == html.ElementNode && n.Data == name {
-		*nodes = append(*nodes, Document{Root: n})
-
-		if limit == 1 {
-			return 0
+	var count uint8 = 0
+	length := len(params)
+	for _, attr := range attributes {
+		value, ok := params[attr.Key]
+		if ok && value == attr.Val {
+			count++
 		}
 	}
 
+	if count > 0 && uint8(length) == count {
+		return true
+	} else if !isStrict && count > 0 {
+		return true
+	}
+
+	return false
+}
+
+func traverse(n *html.Node, name string, nodes *[]Document, limit int8, params map[string]any) uint8 {
+
+	if n.Type == html.ElementNode && n.Data == name {
+		if hasIntersection(params, n.Attr, false) {
+			*nodes = append(*nodes, Document{Root: n})
+			if limit == 1 {
+				return 0
+			}
+		}
+
+	}
+
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		status := traverse(c, name, nodes, limit)
+		status := traverse(c, name, nodes, limit, params)
 		if status == 0 {
 			return 0
 		}
@@ -58,14 +78,17 @@ func traverse(n *html.Node, name string, nodes *[]Document, limit int8) uint8 {
 	return 1
 }
 
-func (d Document) FindAll(name string) []Document {
+func (d Document) FindAll(name string, params map[string]any) []Document {
 	var docs = []Document{}
-	traverse(d.Root, name, &docs, -1)
+	traverse(d.Root, name, &docs, -1, params)
 	return docs
 }
 
-func (d Document) FindOne(name string) Document {
+func (d Document) FindOne(name string, params map[string]any) Document {
 	var docs = []Document{}
-	traverse(d.Root, name, &docs, 1)
+	traverse(d.Root, name, &docs, 1, params)
+	if len(docs) == 0 {
+		return Document{}
+	}
 	return docs[0]
 }
