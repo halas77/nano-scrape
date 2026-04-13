@@ -1,18 +1,16 @@
 package engine
 
 import (
+	"fmt"
+	"regexp"
 	"strings"
 
 	"golang.org/x/net/html"
 )
 
+// adding strings function to get strings of a tag not sub tags concatenate them and append them to an array
 type Document struct {
 	Root *html.Node
-}
-
-func IsType[T any](val any) bool {
-	_, ok := val.(T)
-	return ok
 }
 
 func Scrape(input string) (Document, error) {
@@ -33,6 +31,17 @@ type Traverser interface {
 	FindOne()
 }
 
+func getNodeStrings(n *html.Node) string {
+	nodeStrings := []string{}
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		if c.Type == html.TextNode {
+			nodeStrings = append(nodeStrings, c.Data)
+		}
+	}
+
+	return strings.Join(nodeStrings, "")
+}
+
 func hasIntersection(params map[string]any, attributes []html.Attribute, isStrict bool) bool {
 	if params == nil {
 		return true
@@ -40,6 +49,11 @@ func hasIntersection(params map[string]any, attributes []html.Attribute, isStric
 
 	var count uint8 = 0
 	length := len(params)
+	_, ok := params["string"]
+	if ok {
+		length--
+	}
+
 	for _, attr := range attributes {
 		value, ok := params[attr.Key]
 		if ok && value == attr.Val {
@@ -56,10 +70,43 @@ func hasIntersection(params map[string]any, attributes []html.Attribute, isStric
 	return false
 }
 
+func flexMatch(main string, target string, caseSensitive bool) bool {
+	// 1. Escape special characters to treat the target as literal text
+	pattern := regexp.QuoteMeta(target)
+
+	// 2. If caseSensitive is false, prepend the "ignore case" flag (?i)
+	if !caseSensitive {
+		pattern = "(?i)" + pattern
+	}
+
+	// 3. Compile the regex
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		return false
+	}
+
+	// 4. Match against the main string
+	return re.MatchString(main)
+}
+
 func traverse(n *html.Node, name string, nodes *[]Document, limit int8, params map[string]any) uint8 {
 
 	if n.Type == html.ElementNode && n.Data == name {
-		if hasIntersection(params, n.Attr, false) {
+		canAddNode := false
+
+		canAddNode = hasIntersection(params, n.Attr, false)
+
+		target, ok := params["string"]
+
+		if ok {
+			str := getNodeStrings(n)
+			fmt.Println("Been here:", str)
+			if targetStr, ok := target.(string); ok {
+				canAddNode = flexMatch(str, targetStr, false)
+			}
+		}
+
+		if canAddNode {
 			*nodes = append(*nodes, Document{Root: n})
 			if limit == 1 {
 				return 0
