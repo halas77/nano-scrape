@@ -48,8 +48,4 @@ func main() {
 
 	// text := "Hello world mother"
 
-	// fmt.Println(RobustMatch(text, "Hello world mother")) // true (Exact)
-	// fmt.Println(RobustMatch(text, "orld"))               // true (Substring)
-	// fmt.Println(RobustMatch(text, "mother"))             // true (Substring)
-	// fmt.Println(RobustMatch(text, "abc"))                // false
 }
