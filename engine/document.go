@@ -71,21 +71,17 @@ func hasIntersection(params map[string]any, attributes []html.Attribute, isStric
 }
 
 func flexMatch(main string, target string, caseSensitive bool) bool {
-	// 1. Escape special characters to treat the target as literal text
 	pattern := regexp.QuoteMeta(target)
 
-	// 2. If caseSensitive is false, prepend the "ignore case" flag (?i)
 	if !caseSensitive {
 		pattern = "(?i)" + pattern
 	}
 
-	// 3. Compile the regex
 	re, err := regexp.Compile(pattern)
 	if err != nil {
 		return false
 	}
 
-	// 4. Match against the main string
 	return re.MatchString(main)
 }
 
