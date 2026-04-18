@@ -1,0 +1,141 @@
+package engine
+
+import (
+	"strings"
+	"testing"
+
+	"golang.org/x/net/html"
+)
+
+func TestGetNodeStrings(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string // HTML snippet
+		expected string
+	}{
+		{
+			name:     "Simple text",
+			input:    "<div>Hello World</div>",
+			expected: "Hello World",
+		},
+		{
+			name:     "Ignore nested tags",
+			input:    "<div>Hello <span>Inner</span> World</div>",
+			expected: "Hello  World",
+		},
+		{
+			name:     "Multiple text nodes",
+			input:    "<div>Part 1Part 2</div>",
+			expected: "Part 1Part 2",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Helper to turn string into a node
+			doc, _ := html.Parse(strings.NewReader(tt.input))
+			// html.Parse returns <html><body><your_input>... we want the div
+			node := doc.FirstChild.LastChild.FirstChild
+
+			got := getNodeStrings(node)
+			if got != tt.expected {
+				t.Errorf("getNodeStrings() = %v, want %v", got, tt.expected)
+			}
+		})
+	}
+}
+
+func TestHasIntersection(t *testing.T) {
+	// Mock attributes
+	attrs := []html.Attribute{
+		{Key: "class", Val: "btn-primary"},
+		{Key: "id", Val: "submit-button"},
+	}
+
+	tests := []struct {
+		name     string
+		params   map[string]any
+		isStrict bool
+		expected bool
+	}{
+		{
+			name:     "Nil params should return true",
+			params:   nil,
+			expected: true,
+		},
+		{
+			name:     "Single match (Non-Strict)",
+			params:   map[string]any{"class": "btn-primary"},
+			isStrict: false,
+			expected: true,
+		},
+		{
+			name:     "Full match (Strict)",
+			params:   map[string]any{"class": "btn-primary", "id": "submit-button"},
+			isStrict: true,
+			expected: true,
+		},
+		{
+			name:     "Partial match fails (Strict)",
+			params:   map[string]any{"class": "btn-primary", "id": "wrong-id"},
+			isStrict: true,
+			expected: false,
+		},
+		{
+			name:     "Ignore 'string' key in attribute count",
+			params:   map[string]any{"class": "btn-primary", "string": "click me"},
+			isStrict: true,
+			expected: true, // Only 'class' is checked against attributes
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := hasIntersection(tt.params, attrs, tt.isStrict)
+			if got != tt.expected {
+				t.Errorf("hasIntersection() %s: got %v, want %v", tt.name, got, tt.expected)
+			}
+		})
+	}
+}
+
+func TestFlexMatch(t *testing.T) {
+	tests := []struct {
+		name          string
+		main          string
+		target        string
+		caseSensitive bool
+		expected      bool
+	}{
+		{
+			name:          "Case insensitive match",
+			main:          "GoScrape is Cool",
+			target:        "cool",
+			caseSensitive: false,
+			expected:      true,
+		},
+		{
+			name:          "Case sensitive fail",
+			main:          "GoScrape",
+			target:        "goscrape",
+			caseSensitive: true,
+			expected:      false,
+		},
+		{
+			name:          "Regex characters are escaped",
+			main:          "Price is $100*",
+			target:        "$100*",
+			caseSensitive: false,
+			expected:      true, // If QuoteMeta works, this passes
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := flexMatch(tt.main, tt.target, tt.caseSensitive)
+			if got != tt.expected {
+				t.Errorf("flexMatch() %s: got %v, want %v", tt.name, got, tt.expected)
+			}
+		})
+	}
+}
