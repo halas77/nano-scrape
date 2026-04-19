@@ -87,6 +87,18 @@ func TestHasIntersection(t *testing.T) {
 			isStrict: true,
 			expected: true, // Only 'class' is checked against attributes
 		},
+		{
+			name:     "Ignore '_name_', and 'string' key in attribute count",
+			params:   map[string]any{"class": "btn-primary", "string": "click me", "_name_": "div"},
+			isStrict: true,
+			expected: true, // Only 'class' is checked against attributes
+		},
+		{
+			name:     "Ignore '_name_' key in attribute count",
+			params:   map[string]any{"class": "btn-primary", "_name_": "div"},
+			isStrict: true,
+			expected: true, // Only 'class' is checked against attributes
+		},
 	}
 
 	for _, tt := range tests {

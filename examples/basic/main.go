@@ -29,15 +29,14 @@ func main() {
 
 	scrape, _ := engine.Scrape(input)
 	// article := scrape.FindAll("article")
-
-	// span := scrape.FindAll("div")
+	divs := scrape.FindAll("div")
+	fmt.Println("divs:", divs)
 
 	// div := scrape.FindOne("span", map[string]any{"class": "info", "id": "id-1"})
 	// fmt.Println("div", div.Root.Data)
 
-	strong := scrape.FindOne("strong", map[string]any{"string": "abe"})
-	fmt.Println("strong: ", strong)
-	// span := div.FindAll("hr", nil)
+	// strong := scrape.FindOne("strong", map[string]any{"string": "abe"})
+	// fmt.Println("strong: ", strong.Root.Data)
 
 	// for i := range span {
 	// 	node := span[i]

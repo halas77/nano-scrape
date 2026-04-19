@@ -9,14 +9,20 @@ import (
 )
 
 // adding strings function to get strings of a tag not sub tags concatenate them and append them to an array
+
 type Document struct {
-	Root *html.Node
+	Root      *html.Node
+	isStrict  bool
+	params    map[string]any
+	limit     uint8
+	isInitial bool
 }
 
 func Scrape(input string) (Document, error) {
 	reader := strings.NewReader(input)
 	node, err := html.Parse(reader)
-	doc := Document{Root: node}
+	doc := Document{Root: node, isInitial: true}
+	fmt.Println("is initial: ", doc.isInitial)
 
 	if err != nil {
 		return doc, err
@@ -50,12 +56,19 @@ func hasIntersection(params map[string]any, attributes []html.Attribute, isStric
 	var count uint8 = 0
 	length := len(params)
 	_, ok := params["string"]
-	if ok {
-		length--
+	_, name := params["_name_"]
+
+	if ok || name {
+		length = 0
+	}
+
+	if length == int(count) {
+		return true
 	}
 
 	for _, attr := range attributes {
 		value, ok := params[attr.Key]
+
 		if ok && value == attr.Val {
 			count++
 		}
@@ -85,14 +98,14 @@ func flexMatch(main string, target string, caseSensitive bool) bool {
 	return re.MatchString(main)
 }
 
-func traverse(n *html.Node, name string, nodes *[]Document, limit int8, params map[string]any) uint8 {
+func (d Document) traverse(n *html.Node, nodes *[]Document) uint8 {
+	name, _ := d.params["_name_"]
+	limit := d.limit
 
 	if n.Type == html.ElementNode && n.Data == name {
 		canAddNode := false
-
-		canAddNode = hasIntersection(params, n.Attr, false)
-
-		target, ok := params["string"]
+		canAddNode = hasIntersection(d.params, n.Attr, false)
+		target, ok := d.params["string"]
 
 		if ok {
 			str := getNodeStrings(n)
@@ -112,7 +125,7 @@ func traverse(n *html.Node, name string, nodes *[]Document, limit int8, params m
 	}
 
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		status := traverse(c, name, nodes, limit, params)
+		status := d.traverse(c, nodes)
 		if status == 0 {
 			return 0
 		}
@@ -121,15 +134,26 @@ func traverse(n *html.Node, name string, nodes *[]Document, limit int8, params m
 	return 1
 }
 
-func (d Document) FindAll(name string, params map[string]any) []Document {
+func (d Document) FindAll(name string, params ...map[string]any) []Document {
 	var docs = []Document{}
-	traverse(d.Root, name, &docs, -1, params)
+	if params == nil {
+		var emptyMap map[string]any = make(map[string]any)
+		d.params = emptyMap
+	} else {
+		d.params = params[0]
+	}
+	d.isStrict = false
+	d.params["_name_"] = name
+
+	d.traverse(d.Root, &docs)
 	return docs
 }
 
-func (d Document) FindOne(name string, params map[string]any) Document {
-	var docs = []Document{}
-	traverse(d.Root, name, &docs, 1, params)
+func (d Document) FindOne(name string, params ...map[string]any) Document {
+	d.limit = 1
+	var docs []Document = d.FindAll(name, params...)
+	d.traverse(d.Root, &docs)
+
 	if len(docs) == 0 {
 		return Document{}
 	}
