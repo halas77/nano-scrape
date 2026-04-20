@@ -7,30 +7,43 @@ import (
 )
 
 func main() {
-	input := `
-			<div id="inventory-container">
-				<article class="data-card">
-					<div class="info">
-						<span class="price-tag">$899.99</span>
-						<hr/>
-					</div>
+	// input := `
+	// 		<div id="inventory-container">
+	// 			<article class="data-card">
+	// 				<div class="info">
+	// 					<span class="price-tag">$899.99</span>
+	// 					<hr/>
+	// 				</div>
 
-					<span class="info" id="id-1" >
-						<span class="price-tag">$530</span>
-						<hr/>
-					</span>
-					<strong> look <b> Bolded </b> 
-					Abebe
-					</strong>
-				</article>
-				<b> Bolded </b>
-			</div>
-		`
+	// 				<span class="info" id="id-1" >
+	// 					<span class="price-tag">$530</span>
+	// 					<hr/>
+	// 				</span>
+	// 				<strong> look <b> Bolded </b>
+	// 				Abebe
+	// 				</strong>
+	// 			</article>
+	// 			<b> Bolded </b>
+	// 		</div>
+	// 	`
 
-	scrape, _ := engine.Scrape(input)
-	// article := scrape.FindAll("article")
-	divs := scrape.FindAll("div")
-	fmt.Println("divs:", divs)
+	raw := `  
+	<div> 
+		<p>ሰላም (Hello) ✋</p> 
+		<span>你好 (Nǐ hǎo) 🚀</span>
+		<div>你好 (Nǐ hǎo) 🚀</div>
+	</div>  
+	 `
+	scrape, _ := engine.Scrape(raw)
+	var depth uint16 = 0
+	fmt.Println("Print", scrape.Print(nil, &depth))
+
+	// // article := scrape.FindAll("article")
+	// divs := scrape.FindAll("div")
+	// fmt.Println("divs:", divs)
+
+	// formatted := engine.FormatPseudoHTML(input, 4)
+	// fmt.Println(formatted)
 
 	// div := scrape.FindOne("span", map[string]any{"class": "info", "id": "id-1"})
 	// fmt.Println("div", div.Root.Data)
