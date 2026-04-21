@@ -7,38 +7,44 @@ import (
 )
 
 func main() {
-	// input := `
-	// 		<div id="inventory-container">
-	// 			<article class="data-card">
-	// 				<div class="info">
-	// 					<span class="price-tag">$899.99</span>
-	// 					<hr/>
-	// 				</div>
+	input := `
+			<div id="inventory-container">
+				<article class="data-card">
+					<div class="info">
+						<span class="price-tag">$899.99</span>
+						<hr/>
+					</div>
 
-	// 				<span class="info" id="id-1" >
-	// 					<span class="price-tag">$530</span>
-	// 					<hr/>
-	// 				</span>
-	// 				<strong> look <b> Bolded </b>
-	// 				Abebe
-	// 				</strong>
-	// 			</article>
-	// 			<b> Bolded </b>
-	// 		</div>
-	// 	`
+					<span class="info" id="id-1" >
+						<span class="price-tag">$530</span>
+						<hr/>
+					</span>
+					<strong> look <b> Bolded </b>
+					Abebe
+					</strong>
+				</article>
+				<b> Bolded </b>
+			</div>
+		`
 
-	raw := `  
-	<div> 
-		<p>ሰላም (Hello) ✋</p> 
-		<span>你好 (Nǐ hǎo) 🚀</span>
-		<div>你好 (Nǐ hǎo) 🚀</div>
-	</div>  
-	 `
-	scrape, _ := engine.Scrape(raw)
-	var depth uint16 = 0
-	fmt.Println("Print", scrape.Print(nil, &depth))
+	// raw := `
+	// <div>
+	// 	<p>
+	// 		ሰላም (Hello) ✋
+	// 	</p>
+	// 	<span>
+	// 		你好 (Nǐ hǎo) 🚀
+	// 	</span>
+	// 	<div>
+	// 		你好 (Nǐ hǎo) 🚀
+	// 	</div>
+	// </div>
+	//  `
+	scrape, _ := engine.Scrape(input)
+	article := scrape.FindOne("article")
 
-	// // article := scrape.FindAll("article")
+	fmt.Println(article.Print())
+
 	// divs := scrape.FindAll("div")
 	// fmt.Println("divs:", divs)
 
