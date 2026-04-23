@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/andybalholm/cascadia"
 	"golang.org/x/net/html"
 )
 
@@ -16,6 +17,11 @@ type Document struct {
 	params    map[string]any
 	limit     uint8
 	isInitial bool
+}
+
+type Selection struct {
+	Nodes []*html.Node
+	Doc   *Document
 }
 
 func Scrape(input string) (Document, error) {
@@ -132,6 +138,79 @@ func (d Document) traverse(n *html.Node, nodes *[]Document) uint8 {
 	}
 
 	return 1
+}
+
+func (d *Document) Find(selector string) *Selection {
+	sel, err := cascadia.Parse(selector)
+	if err != nil {
+		return &Selection{Doc: d}
+	}
+	matches := cascadia.QueryAll(d.Root, sel)
+	return &Selection{Nodes: matches, Doc: d}
+}
+
+func (s *Selection) Find(selector string) *Selection {
+	sel, err := cascadia.Parse(selector)
+	if err != nil || len(s.Nodes) == 0 {
+		return &Selection{Doc: s.Doc}
+	}
+
+	var newNodes []*html.Node
+	for _, n := range s.Nodes {
+		matches := cascadia.QueryAll(n, sel)
+		newNodes = append(newNodes, matches...)
+	}
+	return &Selection{Nodes: newNodes, Doc: s.Doc}
+}
+
+func matchAttributes(n *html.Node, target map[string]string) bool {
+	if len(target) == 0 {
+		return true
+	}
+
+	actualAttrs := make(map[string]string)
+	for _, attr := range n.Attr {
+		actualAttrs[attr.Key] = attr.Val
+	}
+
+	for key, expectedVal := range target {
+		actualVal, exists := actualAttrs[key]
+		if !exists || actualVal != expectedVal {
+			return false
+		}
+	}
+
+	return true
+}
+
+func searchNodes(n *html.Node, name string, attrs map[string]string, matches *[]*html.Node) {
+	if n.Type == html.ElementNode && n.Data == name {
+		if matchAttributes(n, attrs) {
+			*matches = append(*matches, n)
+		}
+	}
+
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		searchNodes(c, name, attrs, matches)
+	}
+}
+
+func (s *Selection) First() *Selection {
+	if len(s.Nodes) == 0 {
+		return s
+	}
+	return &Selection{Nodes: s.Nodes[:1], Doc: s.Doc}
+}
+
+func (s *Selection) Eq(i int) *Selection {
+	if i < 0 || i >= len(s.Nodes) {
+		return &Selection{Doc: s.Doc}
+	}
+	return &Selection{Nodes: []*html.Node{s.Nodes[i]}, Doc: s.Doc}
+}
+
+func (s *Selection) Length() int {
+	return len(s.Nodes)
 }
 
 func (d Document) FindAll(name string, params ...map[string]any) []Document {
