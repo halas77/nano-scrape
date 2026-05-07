@@ -160,12 +160,6 @@ func (d Document) FindOne(name string, params ...map[string]any) Document {
 	return docs[0]
 }
 
-var whitespaceRegex = regexp.MustCompile(`\s`)
-
-func hasWhitespaceRegex(s string) bool {
-	return whitespaceRegex.MatchString(s)
-}
-
 func (d Document) Print(root *html.Node, depth *uint16) string {
 	n := d.Root
 	if root != nil {
@@ -212,53 +206,5 @@ func (d Document) Print(root *html.Node, depth *uint16) string {
 		builder.WriteString(">")
 
 	}
-	return builder.String()
-}
-
-func FormatPseudoHTML(input string, indentWidth int) string {
-	// 1. Clean the input
-	input = strings.TrimSpace(input)
-
-	var builder strings.Builder
-	indentLevel := 0
-
-	// Convert to runes for Unicode safety (Amharic, Mandarin, etc.)
-	runes := []rune(input)
-	n := len(runes)
-
-	for i := range n {
-		// Detect closing tag </
-		if i+1 < n && runes[i] == '<' && runes[i+1] == '/' {
-			indentLevel--
-
-			// SAFETY: Prevent negative repeat count panic
-			if indentLevel < 0 {
-				indentLevel = 0
-			}
-
-			builder.WriteRune('\n')
-			builder.WriteString(strings.Repeat(" ", indentLevel*indentWidth))
-		}
-
-		builder.WriteRune(runes[i])
-
-		// Detect end of an opening tag >
-		if runes[i] == '>' {
-			// Look ahead to see if we should indent the next line
-			if i+1 < n {
-				// Only indent if the next tag is NOT a closing tag
-				// and if we aren't looking at a self-closing tag like <br/>
-				isClosingNext := (i+2 < n && runes[i+1] == '<' && runes[i+2] == '/')
-				isSelfClosing := (i > 0 && runes[i-1] == '/')
-
-				if !isClosingNext && !isSelfClosing {
-					indentLevel++
-					builder.WriteRune('\n')
-					builder.WriteString(strings.Repeat(" ", indentLevel*indentWidth))
-				}
-			}
-		}
-	}
-
 	return builder.String()
 }
