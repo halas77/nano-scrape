@@ -7,36 +7,41 @@ import (
 )
 
 func main() {
-	// input := `
-	// 		<div id="inventory-container">
-	// 			<article class="data-card">
-	// 				<div class="info">
-	// 					<span class="price-tag">$899.99</span>
-	// 					<hr/>
-	// 				</div>
+	input := `
+			<div id="inventory-container">
+				<article class="data-card">
+					<div class="info">
+						<span class="price-tag">$899.99</span>
+						<hr/>
+					</div>
 
-	// 				<span class="info" id="id-1" >
-	// 					<span class="price-tag">$530</span>
-	// 					<hr/>
-	// 				</span>
-	// 				<strong> look <b> Bolded </b>
-	// 				Abebe
-	// 				</strong>
-	// 			</article>
-	// 			<b> Bolded </b>
-	// 		</div>
-	// 	`
+					<span class="info" id="id-1" >
+						<span class="price-tag">$530</span>
+						<hr/>
+					</span>
+					<strong> look <b> Bolded </b>
+					Abebe
+					</strong>
+				</article>
+				<b> Bolded </b>
+			</div>
+		`
 
-	raw := `  
-	<div> 
-		<p>ሰላም (Hello) ✋</p> 
-		<span>你好 (Nǐ hǎo) 🚀</span>
-		<div>你好 (Nǐ hǎo) 🚀</div>
-	</div>  
-	 `
-	scrape, _ := engine.Scrape(raw)
-	var depth uint16 = 0
-	fmt.Println("Print", scrape.Print(nil, &depth))
+	// raw := `
+	// <div>
+	// 	<p>ሰላም (Hello) ✋</p>
+	// 	<span>你好 (Nǐ hǎo) 🚀</span>
+	// 	<div>你好 (Nǐ hǎo) 🚀</div>
+	// </div>
+	//  `
+	scrape, _ := engine.InitDocument(input)
+	// fmt.Println("Print", scrape.Print())
+
+	// divs := scrape.FindFirst("span", map[string]any{"string": "$899"})
+	// fmt.Println(divs.Print())
+
+	d := scrape.FindAll("span")
+	fmt.Println(d[2].Print())
 
 	// // article := scrape.FindAll("article")
 	// divs := scrape.FindAll("div")

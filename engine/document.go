@@ -43,67 +43,6 @@ type Traverser interface {
 	FindOne()
 }
 
-func getNodeStrings(n *html.Node) string {
-	nodeStrings := []string{}
-	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		if c.Type == html.TextNode {
-			nodeStrings = append(nodeStrings, c.Data)
-		}
-	}
-
-	return strings.Join(nodeStrings, "")
-}
-
-func hasIntersection(params map[string]any, attributes []html.Attribute, isStrict bool) bool {
-	if params == nil {
-		return true
-	}
-
-	var count uint8 = 0
-	length := len(params)
-	_, ok := params["string"]
-	_, name := params["_name_"]
-
-	if ok || name {
-		length = 0
-	}
-
-	if length == int(count) {
-		return true
-	}
-
-	for _, attr := range attributes {
-		value, ok := params[attr.Key]
-
-		if ok && value == attr.Val {
-			count++
-		}
-	}
-
-	if count > 0 && uint8(length) == count {
-		return true
-	} else if !isStrict && count > 0 {
-		return true
-	}
-
-	return false
-}
-
-func flexMatch(main string, target string, caseSensitive bool) bool {
-	pattern := regexp.QuoteMeta(target)
-
-	if !caseSensitive {
-		pattern = "(?i)" + pattern
-	}
-
-	re, err := regexp.Compile(pattern)
-	if err != nil {
-		return false
-	}
-
-	return re.MatchString(main)
-}
-
 func (d Document) traverse(n *html.Node, nodes *[]Document) uint8 {
 	name, _ := d.params["_name_"]
 	limit := d.limit
