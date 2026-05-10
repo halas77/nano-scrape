@@ -14,6 +14,8 @@ type SelectionParams struct {
 	limit     uint8
 }
 
+type TraverseCallback func(*html.Node) bool
+
 func hasIntersection(params map[string]any, attributes []html.Attribute, isStrict bool) bool {
 	if params == nil {
 		return true
@@ -51,45 +53,49 @@ func hasIntersection(params map[string]any, attributes []html.Attribute, isStric
 
 func getNodeStrings(n *html.Node) string {
 	nodeStrings := []string{}
-	for c := n.FirstChild; c != nil; c = c.NextSibling {
+
+	traverse(n, 0, false, func(c *html.Node) bool {
 		if c.Type == html.TextNode {
 			nodeStrings = append(nodeStrings, c.Data)
 		}
-	}
+		return false
+	})
 
 	return strings.Join(nodeStrings, "")
 }
 
-// use a callback to make the filtering logic only use traverse function
-func (s SelectionParams) traverse(n *html.Node, nodes *[]Tag) uint8 {
-	name, _ := s.params["_name_"]
-	limit := s.params["limit"]
+func nameSelector(n *html.Node, params map[string]any) bool {
+	name, _ := params["_name_"]
+	canAddNode := false
 
 	if n.Type == html.ElementNode && n.Data == name {
-		canAddNode := false
-		canAddNode = hasIntersection(s.params, n.Attr, false)
-		target, ok := s.params["string"]
+		canAddNode = hasIntersection(params, n.Attr, false)
+		target, ok := params["string"]
 
-		// fmt.Println(target, ok)
 		if ok {
 			str := getNodeStrings(n)
 			if targetStr, ok := target.(string); ok {
 				canAddNode = flexMatch(str, targetStr, false)
 			}
 		}
-
-		if canAddNode {
-			*nodes = append(*nodes, Tag{root: n, Name: n.Data, Attrs: n.Attr, Class: "", Id: ""})
-			if limit == 1 {
-				return 0
-			}
-		}
 	}
 
+	return canAddNode
+}
+
+// use a callback to make the filtering logic only use traverse function
+func traverse(n *html.Node, limit uint8, recourse bool, cb TraverseCallback) uint8 {
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		status := s.traverse(c, nodes)
-		if status == 0 {
+		exit := cb(c)
+		if limit == 1 && exit {
 			return 0
+		}
+
+		if recourse {
+			status := traverse(c, limit, recourse, cb)
+			if status == 0 {
+				return 0
+			}
 		}
 	}
 

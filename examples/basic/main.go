@@ -35,17 +35,20 @@ func main() {
 	// </div>
 	//  `
 	scrape, _ := engine.InitDocument(input)
-	// fmt.Println("Print", scrape.Print())
+	fmt.Println("Print", scrape.Print())
 
 	// divs := scrape.FindFirst("span", map[string]any{"string": "$899"})
 	// fmt.Println(divs.Print())
 
-	d := scrape.FindAll("span")
-	fmt.Println(d[2].Print())
+	// d := scrape.FindFirst("strong", map[string]any{"string": "bebe"})
+	// fmt.Println(d.Print())
 
 	// // article := scrape.FindAll("article")
 	// divs := scrape.FindAll("div")
-	// fmt.Println("divs:", divs)
+
+	// for _, el := range divs {
+	// 	fmt.Println("divs:", el.Print())
+	// }
 
 	// formatted := engine.FormatPseudoHTML(input, 4)
 	// fmt.Println(formatted)

@@ -12,9 +12,8 @@ type Tag struct {
 	Attrs []html.Attribute
 	Class string
 	Id    string
+	limit uint8
 }
-
-type TraverseCallback func(*html.Node) bool
 
 func InitDocument(input string) (Tag, error) {
 	reader := strings.NewReader(input)
@@ -37,7 +36,13 @@ func (t Tag) FindAll(name string, params ...map[string]any) []Tag {
 	p["_name_"] = name
 
 	selectionParams := SelectionParams{params: p}
-	selectionParams.traverse(t.root, &tags)
+	traverse(t.root, t.limit, true, func(n *html.Node) bool {
+		isMatch := nameSelector(n, selectionParams.params)
+		if isMatch {
+			tags = append(tags, Tag{root: n, Name: n.Data, Attrs: n.Attr, Class: "", Id: ""})
+		}
+		return isMatch
+	})
 	return tags
 }
 
@@ -47,8 +52,8 @@ func (t Tag) FindFirst(name string, params ...map[string]any) Tag {
 	if len(params) > 0 {
 		p = params[0]
 	}
-	p["limit"] = 0
 
+	t.limit = 1
 	var tags []Tag = t.FindAll(name, p)
 
 	if len(tags) == 0 {
