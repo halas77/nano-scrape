@@ -2,13 +2,14 @@ package engine
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 
+	"github.com/andybalholm/cascadia"
 	"golang.org/x/net/html"
 )
 
-// adding strings function to get strings of a tag not sub tags concatenate them and append them to an array
+// adding strings function to
+// get strings of a tag not sub tags concatenate them and append them to an array
 
 type Document struct {
 	Root        *html.Node
@@ -17,6 +18,11 @@ type Document struct {
 	limit       uint8
 	isInitial   bool
 	currentNode *html.Node
+}
+
+type Selection struct {
+	Nodes []*html.Node
+	Doc   *Document
 }
 
 func Scrape(input string) (Document, error) {
@@ -36,67 +42,6 @@ type Traverser interface {
 	// Traverse()
 	FindAll(name string)
 	FindOne()
-}
-
-func getNodeStrings(n *html.Node) string {
-	nodeStrings := []string{}
-	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		if c.Type == html.TextNode {
-			nodeStrings = append(nodeStrings, c.Data)
-		}
-	}
-
-	return strings.Join(nodeStrings, "")
-}
-
-func hasIntersection(params map[string]any, attributes []html.Attribute, isStrict bool) bool {
-	if params == nil {
-		return true
-	}
-
-	var count uint8 = 0
-	length := len(params)
-	_, ok := params["string"]
-	_, name := params["_name_"]
-
-	if ok || name {
-		length = 0
-	}
-
-	if length == int(count) {
-		return true
-	}
-
-	for _, attr := range attributes {
-		value, ok := params[attr.Key]
-
-		if ok && value == attr.Val {
-			count++
-		}
-	}
-
-	if count > 0 && uint8(length) == count {
-		return true
-	} else if !isStrict && count > 0 {
-		return true
-	}
-
-	return false
-}
-
-func flexMatch(main string, target string, caseSensitive bool) bool {
-	pattern := regexp.QuoteMeta(target)
-
-	if !caseSensitive {
-		pattern = "(?i)" + pattern
-	}
-
-	re, err := regexp.Compile(pattern)
-	if err != nil {
-		return false
-	}
-
-	return re.MatchString(main)
 }
 
 func (d Document) traverse(n *html.Node, nodes *[]Document) uint8 {
@@ -133,6 +78,79 @@ func (d Document) traverse(n *html.Node, nodes *[]Document) uint8 {
 	}
 
 	return 1
+}
+
+func (d *Document) Find(selector string) *Selection {
+	sel, err := cascadia.Parse(selector)
+	if err != nil {
+		return &Selection{Doc: d}
+	}
+	matches := cascadia.QueryAll(d.Root, sel)
+	return &Selection{Nodes: matches, Doc: d}
+}
+
+func (s *Selection) Find(selector string) *Selection {
+	sel, err := cascadia.Parse(selector)
+	if err != nil || len(s.Nodes) == 0 {
+		return &Selection{Doc: s.Doc}
+	}
+
+	var newNodes []*html.Node
+	for _, n := range s.Nodes {
+		matches := cascadia.QueryAll(n, sel)
+		newNodes = append(newNodes, matches...)
+	}
+	return &Selection{Nodes: newNodes, Doc: s.Doc}
+}
+
+func matchAttributes(n *html.Node, target map[string]string) bool {
+	if len(target) == 0 {
+		return true
+	}
+
+	actualAttrs := make(map[string]string)
+	for _, attr := range n.Attr {
+		actualAttrs[attr.Key] = attr.Val
+	}
+
+	for key, expectedVal := range target {
+		actualVal, exists := actualAttrs[key]
+		if !exists || actualVal != expectedVal {
+			return false
+		}
+	}
+
+	return true
+}
+
+func searchNodes(n *html.Node, name string, attrs map[string]string, matches *[]*html.Node) {
+	if n.Type == html.ElementNode && n.Data == name {
+		if matchAttributes(n, attrs) {
+			*matches = append(*matches, n)
+		}
+	}
+
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		searchNodes(c, name, attrs, matches)
+	}
+}
+
+func (s *Selection) First() *Selection {
+	if len(s.Nodes) == 0 {
+		return s
+	}
+	return &Selection{Nodes: s.Nodes[:1], Doc: s.Doc}
+}
+
+func (s *Selection) Eq(i int) *Selection {
+	if i < 0 || i >= len(s.Nodes) {
+		return &Selection{Doc: s.Doc}
+	}
+	return &Selection{Nodes: []*html.Node{s.Nodes[i]}, Doc: s.Doc}
+}
+
+func (s *Selection) Length() int {
+	return len(s.Nodes)
 }
 
 func (d Document) FindAll(name string, params ...map[string]any) []Document {

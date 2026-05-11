@@ -29,24 +29,26 @@ func main() {
 
 	// raw := `
 	// <div>
-	// 	<p>
-	// 		ሰላም (Hello) ✋
-	// 	</p>
-	// 	<span>
-	// 		你好 (Nǐ hǎo) 🚀
-	// 	</span>
-	// 	<div>
-	// 		你好 (Nǐ hǎo) 🚀
-	// 	</div>
+	// 	<p>ሰላም (Hello) ✋</p>
+	// 	<span>你好 (Nǐ hǎo) 🚀</span>
+	// 	<div>你好 (Nǐ hǎo) 🚀</div>
 	// </div>
 	//  `
-	scrape, _ := engine.Scrape(input)
-	article := scrape.FindOne("article")
+	scrape, _ := engine.InitDocument(input)
+	fmt.Println("Print", scrape.Print())
 
-	fmt.Println(article.Print())
+	// divs := scrape.FindFirst("span", map[string]any{"string": "$899"})
+	// fmt.Println(divs.Print())
 
+	// d := scrape.FindFirst("strong", map[string]any{"string": "bebe"})
+	// fmt.Println(d.Print())
+
+	// // article := scrape.FindAll("article")
 	// divs := scrape.FindAll("div")
-	// fmt.Println("divs:", divs)
+
+	// for _, el := range divs {
+	// 	fmt.Println("divs:", el.Print())
+	// }
 
 	// formatted := engine.FormatPseudoHTML(input, 4)
 	// fmt.Println(formatted)
