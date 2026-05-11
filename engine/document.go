@@ -2,7 +2,6 @@ package engine
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/andybalholm/cascadia"
