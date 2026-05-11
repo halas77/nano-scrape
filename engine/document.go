@@ -9,7 +9,6 @@ import (
 )
 
 // adding strings function to get strings of a tag not sub tags concatenate them and append them to an array
-
 type Document struct {
 	Root      *html.Node
 	isStrict  bool

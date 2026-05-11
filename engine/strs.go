@@ -7,6 +7,19 @@ import (
 	"golang.org/x/net/html"
 )
 
+func getNodeStrings(n *html.Node) string {
+	nodeStrings := []string{}
+
+	traverse(n, 0, false, func(c *html.Node) bool {
+		if c.Type == html.TextNode {
+			nodeStrings = append(nodeStrings, c.Data)
+		}
+		return false
+	})
+
+	return strings.Join(nodeStrings, "")
+}
+
 func print(node *html.Node, indentWidth uint16) string {
 
 	var builder strings.Builder

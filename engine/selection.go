@@ -1,8 +1,6 @@
 package engine
 
 import (
-	"strings"
-
 	"golang.org/x/net/html"
 )
 
@@ -51,19 +49,6 @@ func hasIntersection(params map[string]any, attributes []html.Attribute, isStric
 	return false
 }
 
-func getNodeStrings(n *html.Node) string {
-	nodeStrings := []string{}
-
-	traverse(n, 0, false, func(c *html.Node) bool {
-		if c.Type == html.TextNode {
-			nodeStrings = append(nodeStrings, c.Data)
-		}
-		return false
-	})
-
-	return strings.Join(nodeStrings, "")
-}
-
 func nameSelector(n *html.Node, params map[string]any) bool {
 	name, _ := params["_name_"]
 	canAddNode := false
@@ -84,15 +69,15 @@ func nameSelector(n *html.Node, params map[string]any) bool {
 }
 
 // use a callback to make the filtering logic only use traverse function
-func traverse(n *html.Node, limit uint8, recourse bool, cb TraverseCallback) uint8 {
+func traverse(n *html.Node, limit uint8, recurse bool, cb TraverseCallback) uint8 {
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
 		exit := cb(c)
 		if limit == 1 && exit {
 			return 0
 		}
 
-		if recourse {
-			status := traverse(c, limit, recourse, cb)
+		if recurse {
+			status := traverse(c, limit, recurse, cb)
 			if status == 0 {
 				return 0
 			}
