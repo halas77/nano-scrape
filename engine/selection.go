@@ -19,34 +19,31 @@ func hasIntersection(params map[string]any, attributes []html.Attribute, isStric
 		return true
 	}
 
-	var count uint8 = 0
-	length := len(params)
-	_, ok := params["string"]
-	_, name := params["_name_"]
-
-	if ok || name {
-		length = 0
-	}
-
-	if length == int(count) {
-		return true
-	}
-
-	for _, attr := range attributes {
-		value, ok := params[attr.Key]
-
-		if ok && value == attr.Val {
-			count++
+	// Calculate how many attributes we actually need to match (ignoring internal keys)
+	expectedAttrCount := 0
+	for key := range params {
+		if key != "string" && key != "_name_" {
+			expectedAttrCount++
 		}
 	}
 
-	if count > 0 && uint8(length) == count {
-		return true
-	} else if !isStrict && count > 0 {
+	// If no attributes are provided to match, it's an automatic pass for attributes
+	if expectedAttrCount == 0 {
 		return true
 	}
 
-	return false
+	matchCount := 0
+	for _, attr := range attributes {
+		if val, ok := params[attr.Key]; ok && val == attr.Val {
+			matchCount++
+		}
+	}
+
+	if isStrict {
+		return matchCount == expectedAttrCount
+	}
+	return matchCount > 0
+
 }
 
 func nameSelector(n *html.Node, params map[string]any) bool {
