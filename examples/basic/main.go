@@ -43,7 +43,7 @@ func main() {
 	fmt.Println("=== 1. CSS Selector Search (.price-tag) ===")
 	prices := root.Find(".price-tag")
 	for _, p := range prices {
-		fmt.Println("Price found:", p.Name)
+		fmt.Println("Price found:", p.Print())
 	}
 
 	fmt.Println("\n=== 2. CSS + Attribute Filtering (category: electronics) ===")
