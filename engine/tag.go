@@ -80,7 +80,6 @@ func (t Tag) Find(selector string, params ...map[string]any) Tags {
 
 	for _, n := range matches {
 		if p != nil {
-			// Apply additional attribute/string filtering if params are provided
 			if !hasIntersection(p, n.Attr, false) {
 				continue
 			}
@@ -98,16 +97,10 @@ func (t Tag) Find(selector string, params ...map[string]any) Tags {
 	return tags
 }
 
-// FindOne returns the first match of a CSS selector
 func (t Tag) FindOne(selector string, params ...map[string]any) Tag {
-	results := t.Find(selector, params...)
-	if len(results) == 0 {
-		return Tag{}
-	}
-	return results[0]
+	return t.Find(selector, params...).First()
 }
 
-// Find allows chaining CSS searches on a slice of Tags
 func (ts Tags) Find(selector string, params ...map[string]any) Tags {
 	var results Tags
 	for _, t := range ts {
@@ -116,7 +109,6 @@ func (ts Tags) Find(selector string, params ...map[string]any) Tags {
 	return results
 }
 
-// First returns the first tag in the collection
 func (ts Tags) First() Tag {
 	if len(ts) == 0 {
 		return Tag{}
@@ -124,7 +116,6 @@ func (ts Tags) First() Tag {
 	return ts[0]
 }
 
-// FindOne returns the first match of a CSS selector from any tag in the collection
 func (ts Tags) FindOne(selector string, params ...map[string]any) Tag {
 	return ts.Find(selector, params...).First()
 }
