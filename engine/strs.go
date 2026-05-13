@@ -20,6 +20,24 @@ func getNodeStrings(n *html.Node) string {
 	return strings.Join(nodeStrings, "")
 }
 
+func printAttributes(attrs []html.Attribute) string {
+	var builder strings.Builder
+
+	var counter uint8 = 0
+	for _, attr := range attrs {
+		builder.WriteString(" ")
+
+		builder.WriteString(attr.Key)
+		builder.WriteString("=")
+		builder.WriteString(`"`)
+		builder.WriteString(attr.Val)
+		builder.WriteString(`"`)
+		counter++
+	}
+
+	return builder.String()
+}
+
 func print(node *html.Node, indentWidth uint16) string {
 
 	var builder strings.Builder
@@ -45,6 +63,7 @@ func print(node *html.Node, indentWidth uint16) string {
 		builder.WriteString(strings.Repeat(" ", int(width)))
 		builder.WriteString("<")
 		builder.WriteString(node.Data)
+		builder.WriteString(printAttributes(node.Attr))
 		builder.WriteString(">")
 	}
 

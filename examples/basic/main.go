@@ -7,6 +7,23 @@ import (
 )
 
 func main() {
+	requestTest()
+}
+
+func requestTest() {
+	scrape, err := engine.LoadDocument("http://127.0.0.1:5500/examples/basic/index.html")
+
+	if err != nil {
+		fmt.Println("Error parsing HTML:", err)
+		return
+	}
+
+	main := scrape.FindOne("main")
+	fmt.Println(main.Find(".main-panel div").Print())
+
+}
+
+func stringTest() {
 	input := `
 			<div id="inventory-container">
 				<article class="data-card" data-category="electronics">
@@ -35,6 +52,7 @@ func main() {
 		`
 
 	root, err := engine.InitDocument(input)
+
 	if err != nil {
 		fmt.Println("Error parsing HTML:", err)
 		return

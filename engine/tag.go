@@ -1,6 +1,8 @@
 package engine
 
 import (
+	"fmt"
+	"io"
 	"strings"
 
 	"github.com/andybalholm/cascadia"
@@ -19,15 +21,36 @@ type Tag struct {
 
 type Tags []Tag
 
-func InitDocument(input string) (Tag, error) {
-	reader := strings.NewReader(input)
+func InitDocument(input any) (Tag, error) {
+	var reader io.Reader
+
+	switch v := any(input).(type) {
+	case string:
+		reader = strings.NewReader(v)
+	case []byte:
+		reader = strings.NewReader(string(v))
+	default:
+		return Tag{}, fmt.Errorf("unsupported input type: %T", input)
+	}
+
 	node, err := html.Parse(reader)
-	document := Tag{root: node, Name: node.Data, Attrs: node.Attr}
 	if err != nil {
 		return Tag{}, err
 	}
 
+	document := Tag{root: node, Name: node.Data, Attrs: node.Attr}
 	return document, nil
+}
+
+func LoadDocument(url string) (Tag, error) {
+	resp, err := InitRequest(url, "GET", nil).Execute()
+
+	if err != nil {
+		return Tag{}, err
+	}
+
+	return InitDocument(resp)
+
 }
 
 func (t Tag) FindAll(name string, params ...map[string]any) Tags {
