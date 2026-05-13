@@ -8,9 +8,6 @@ import (
 	"golang.org/x/net/html"
 )
 
-// adding strings function to
-// get strings of a tag not sub tags concatenate them and append them to an array
-
 type Document struct {
 	Root        *html.Node
 	isStrict    bool
@@ -180,6 +177,7 @@ func (d Document) FindOne(name string, params ...map[string]any) Document {
 }
 
 func (d Document) Print(indentWidth ...int) string {
+
 	n := d.Root
 	if d.currentNode != nil {
 		n = d.currentNode
@@ -238,7 +236,7 @@ func (d Document) Print(indentWidth ...int) string {
 		builder.WriteString("</")
 		builder.WriteString(n.Data)
 		builder.WriteString(">")
-	}
 
+	}
 	return builder.String()
 }

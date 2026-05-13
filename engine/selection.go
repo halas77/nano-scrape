@@ -1,8 +1,6 @@
 package engine
 
 import (
-	"strings"
-
 	"golang.org/x/net/html"
 )
 
@@ -49,19 +47,6 @@ func hasIntersection(params map[string]any, attributes []html.Attribute, isStric
 	}
 
 	return false
-}
-
-func getNodeStrings(n *html.Node) string {
-	nodeStrings := []string{}
-
-	traverse(n, 0, false, func(c *html.Node) bool {
-		if c.Type == html.TextNode {
-			nodeStrings = append(nodeStrings, c.Data)
-		}
-		return false
-	})
-
-	return strings.Join(nodeStrings, "")
 }
 
 func nameSelector(n *html.Node, params map[string]any) bool {

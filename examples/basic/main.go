@@ -1,31 +1,29 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/halas77/goscrape/engine"
 )
 
 func main() {
-	input := `
-			<div id="inventory-container">
-				<article class="data-card">
-					<div class="info">
-						<span class="price-tag">$899.99</span>
-						<hr/>
-					</div>
+	// input := `
+	// 		<div id="inventory-container">
+	// 			<article class="data-card">
+	// 				<div class="info">
+	// 					<span class="price-tag">$899.99</span>
+	// 					<hr/>
+	// 				</div>
 
-					<span class="info" id="id-1" >
-						<span class="price-tag">$530</span>
-						<hr/>
-					</span>
-					<strong> look <b> Bolded </b>
-					Abebe
-					</strong>
-				</article>
-				<b> Bolded </b>
-			</div>
-		`
+	// 				<span class="info" id="id-1" >
+	// 					<span class="price-tag">$530</span>
+	// 					<hr/>
+	// 				</span>
+	// 				<strong> look <b> Bolded </b>
+	// 				Abebe
+	// 				</strong>
+	// 			</article>
+	// 			<b> Bolded </b>
+	// 		</div>
+	// 	`
 
 	// raw := `
 	// <div>
@@ -34,8 +32,10 @@ func main() {
 	// 	<div>你好 (Nǐ hǎo) 🚀</div>
 	// </div>
 	//  `
-	scrape, _ := engine.InitDocument(input)
-	fmt.Println("Print", scrape.Print())
+	// _, _ := engine.InitDocument(input)
+	// fmt.Println("Print", scrape.Print())
+
+	engine.Fetch()
 
 	// divs := scrape.FindFirst("span", map[string]any{"string": "$899"})
 	// fmt.Println(divs.Print())
