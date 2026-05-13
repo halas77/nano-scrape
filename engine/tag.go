@@ -125,6 +125,10 @@ func (t Tag) FindOne(selector string, params ...map[string]any) Tag {
 	return t.Find(selector, params...).First()
 }
 
+func (t Tag) Text() string {
+	return strings.TrimSpace(getNodeStrings(t.root))
+}
+
 func (ts Tags) Find(selector string, params ...map[string]any) Tags {
 	var results Tags
 	for _, t := range ts {

@@ -19,7 +19,7 @@ func requestTest() {
 	}
 
 	main := scrape.FindOne("main")
-	fmt.Println(main.Find(".main-panel div").Print())
+	fmt.Println(main.FindOne(".main-panel h1").Text())
 
 }
 
