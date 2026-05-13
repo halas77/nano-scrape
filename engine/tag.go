@@ -3,6 +3,7 @@ package engine
 import (
 	"strings"
 
+	"github.com/andybalholm/cascadia"
 	"golang.org/x/net/html"
 )
 
@@ -16,6 +17,8 @@ type Tag struct {
 	Id    string
 }
 
+type Tags []Tag
+
 func InitDocument(input string) (Tag, error) {
 	reader := strings.NewReader(input)
 	node, err := html.Parse(reader)
@@ -27,8 +30,8 @@ func InitDocument(input string) (Tag, error) {
 	return document, nil
 }
 
-func (t Tag) FindAll(name string, params ...map[string]any) []Tag {
-	var tags = []Tag{}
+func (t Tag) FindAll(name string, params ...map[string]any) Tags {
+	var tags = Tags{}
 	var p map[string]any = make(map[string]any)
 
 	if len(params) > 0 {
@@ -55,10 +58,65 @@ func (t Tag) FindFirst(name string, params ...map[string]any) Tag {
 	}
 
 	t.limit = 1
-	var tags []Tag = t.FindAll(name, p)
+	var tags Tags = t.FindAll(name, p)
 
 	if len(tags) == 0 {
 		return Tag{}
 	}
 	return tags[0]
+}
+func (t Tag) Find(selector string, params ...map[string]any) Tags {
+	sel, err := cascadia.Parse(selector)
+	if err != nil {
+		return Tags{}
+	}
+
+	matches := cascadia.QueryAll(t.root, sel)
+	var tags = Tags{}
+
+	var p map[string]any
+	if len(params) > 0 {
+		p = params[0]
+	}
+
+	for _, n := range matches {
+		if p != nil {
+			if !hasIntersection(p, n.Attr, false) {
+				continue
+			}
+			if target, ok := p["string"]; ok {
+				str := getNodeStrings(n)
+				if targetStr, ok := target.(string); ok {
+					if !flexMatch(str, targetStr, false) {
+						continue
+					}
+				}
+			}
+		}
+		tags = append(tags, Tag{root: n, Name: n.Data, Attrs: n.Attr})
+	}
+	return tags
+}
+
+func (t Tag) FindOne(selector string, params ...map[string]any) Tag {
+	return t.Find(selector, params...).First()
+}
+
+func (ts Tags) Find(selector string, params ...map[string]any) Tags {
+	var results Tags
+	for _, t := range ts {
+		results = append(results, t.Find(selector, params...)...)
+	}
+	return results
+}
+
+func (ts Tags) First() Tag {
+	if len(ts) == 0 {
+		return Tag{}
+	}
+	return ts[0]
+}
+
+func (ts Tags) FindOne(selector string, params ...map[string]any) Tag {
+	return ts.Find(selector, params...).First()
 }

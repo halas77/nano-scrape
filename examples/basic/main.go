@@ -1,71 +1,68 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/halas77/goscrape/engine"
 )
 
 func main() {
-	// input := `
-	// 		<div id="inventory-container">
-	// 			<article class="data-card">
-	// 				<div class="info">
-	// 					<span class="price-tag">$899.99</span>
-	// 					<hr/>
-	// 				</div>
+	input := `
+			<div id="inventory-container">
+				<article class="data-card" data-category="electronics">
+					<div class="info">
+						<span class="price-tag">$899.99</span>
+						<span class="stock">In Stock</span>
+					</div>
 
-	// 				<span class="info" id="id-1" >
-	// 					<span class="price-tag">$530</span>
-	// 					<hr/>
-	// 				</span>
-	// 				<strong> look <b> Bolded </b>
-	// 				Abebe
-	// 				</strong>
-	// 			</article>
-	// 			<b> Bolded </b>
-	// 		</div>
-	// 	`
+					<div class="details">
+						<span class="brand">Apple</span>
+						<span class="model">MacBook Air</span>
+					</div>
+				</article>
 
-	// raw := `
-	// <div>
-	// 	<p>ሰላም (Hello) ✋</p>
-	// 	<span>你好 (Nǐ hǎo) 🚀</span>
-	// 	<div>你好 (Nǐ hǎo) 🚀</div>
-	// </div>
-	//  `
-	// _, _ := engine.InitDocument(input)
-	// fmt.Println("Print", scrape.Print())
+				<article class="data-card" data-category="appliances">
+					<div class="info">
+						<span class="price-tag">$450.00</span>
+						<span class="stock">Out of Stock</span>
+					</div>
+					<div class="details">
+						<span class="brand">Samsung</span>
+						<span class="model">Fridge</span>
+					</div>
+				</article>
+			</div>
+		`
 
-	engine.Fetch()
+	root, err := engine.InitDocument(input)
+	if err != nil {
+		fmt.Println("Error parsing HTML:", err)
+		return
+	}
 
-	// divs := scrape.FindFirst("span", map[string]any{"string": "$899"})
-	// fmt.Println(divs.Print())
+	fmt.Println("=== 1. CSS Selector Search (.price-tag) ===")
+	prices := root.Find(".price-tag")
+	for _, p := range prices {
+		fmt.Println("Price found:", p.Print())
+	}
 
-	// d := scrape.FindFirst("strong", map[string]any{"string": "bebe"})
-	// fmt.Println(d.Print())
+	fmt.Println("\n=== 2. CSS + Attribute Filtering (category: electronics) ===")
+	electronics := root.Find("article.data-card", map[string]any{"data-category": "electronics"})
+	for _, e := range electronics {
+		brand := e.FindOne("span", map[string]any{"class": "brand"})
+		fmt.Printf("Electronic Item Brand: %s\n", brand.Print())
+	}
 
-	// // article := scrape.FindAll("article")
-	// divs := scrape.FindAll("div")
+	fmt.Println("\n=== 3. CSS + Deep Text Filtering ('Out of Stock') ===")
+	outOfStockItems := root.Find("article", map[string]any{"string": "Out of Stock"})
+	for _, item := range outOfStockItems {
+		model := item.FindOne(".model")
+		fmt.Printf("Item Out of Stock: %s\n", model.Print())
+	}
 
-	// for _, el := range divs {
-	// 	fmt.Println("divs:", el.Print())
-	// }
-
-	// formatted := engine.FormatPseudoHTML(input, 4)
-	// fmt.Println(formatted)
-
-	// div := scrape.FindOne("span", map[string]any{"class": "info", "id": "id-1"})
-	// fmt.Println("div", div.Root.Data)
-
-	// strong := scrape.FindOne("strong", map[string]any{"string": "abe"})
-	// fmt.Println("strong: ", strong.Root.Data)
-
-	// for i := range span {
-	// 	node := span[i]
-	// 	fmt.Println("span", node.Root.Data)
-	// }
-
-	// hr := article.FindAll("hr")
-
-	// text := "Hello world mother"
-
+	fmt.Println("\n=== 4. Chained CSS Search ===")
+	brands := root.Find("article[data-category='electronics']").Find(".brand")
+	for _, b := range brands {
+		fmt.Println("Brand in Electronics:", b.Print())
+	}
 }

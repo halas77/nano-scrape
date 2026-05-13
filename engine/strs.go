@@ -10,7 +10,7 @@ import (
 func getNodeStrings(n *html.Node) string {
 	nodeStrings := []string{}
 
-	traverse(n, 0, false, func(c *html.Node) bool {
+	traverse(n, 0, true, func(c *html.Node) bool {
 		if c.Type == html.TextNode {
 			nodeStrings = append(nodeStrings, c.Data)
 		}
