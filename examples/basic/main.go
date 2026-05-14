@@ -8,6 +8,7 @@ import (
 
 func main() {
 	requestTest()
+	// stringTest()
 }
 
 func requestTest() {
@@ -18,8 +19,8 @@ func requestTest() {
 		return
 	}
 
-	main := scrape.FindOne("main")
-	fmt.Println(main.FindOne(".main-panel h1").Text())
+	main := scrape.FindOne("span", map[string]any{"class": "item-count"})
+	fmt.Println(main.Print())
 
 }
 

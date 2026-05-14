@@ -1,8 +1,6 @@
 package engine
 
 import (
-	"fmt"
-	"io"
 	"strings"
 
 	"github.com/andybalholm/cascadia"
@@ -21,38 +19,6 @@ type Tag struct {
 
 type Tags []Tag
 
-func InitDocument(input any) (Tag, error) {
-	var reader io.Reader
-
-	switch v := any(input).(type) {
-	case string:
-		reader = strings.NewReader(v)
-	case []byte:
-		reader = strings.NewReader(string(v))
-	default:
-		return Tag{}, fmt.Errorf("unsupported input type: %T", input)
-	}
-
-	node, err := html.Parse(reader)
-	if err != nil {
-		return Tag{}, err
-	}
-
-	document := Tag{root: node, Name: node.Data, Attrs: node.Attr}
-	return document, nil
-}
-
-func LoadDocument(url string) (Tag, error) {
-	resp, err := InitRequest(url, "GET", nil).Execute()
-
-	if err != nil {
-		return Tag{}, err
-	}
-
-	return InitDocument(resp)
-
-}
-
 func (t Tag) FindAll(name string, params ...map[string]any) Tags {
 	var tags = Tags{}
 	var p map[string]any = make(map[string]any)
@@ -63,10 +29,10 @@ func (t Tag) FindAll(name string, params ...map[string]any) Tags {
 	p["_name_"] = name
 
 	selectionParams := SelectionParams{params: p}
-	traverse(t.root, t.limit, true, func(n *html.Node) bool {
-		isMatch := nameSelector(n, selectionParams.params)
+	traverse(t, t.limit, true, func(t Tag) bool {
+		isMatch := nameSelector(t, selectionParams.params)
 		if isMatch {
-			tags = append(tags, Tag{root: n, Name: n.Data, Attrs: n.Attr, Class: "", Id: ""})
+			tags = append(tags, t)
 		}
 		return isMatch
 	})
@@ -108,7 +74,7 @@ func (t Tag) Find(selector string, params ...map[string]any) Tags {
 				continue
 			}
 			if target, ok := p["string"]; ok {
-				str := getNodeStrings(n)
+				str := getNodeStrings(t)
 				if targetStr, ok := target.(string); ok {
 					if !flexMatch(str, targetStr, false) {
 						continue
@@ -126,7 +92,7 @@ func (t Tag) FindOne(selector string, params ...map[string]any) Tag {
 }
 
 func (t Tag) Text() string {
-	return strings.TrimSpace(getNodeStrings(t.root))
+	return strings.TrimSpace(getNodeStrings(t))
 }
 
 func (ts Tags) Find(selector string, params ...map[string]any) Tags {

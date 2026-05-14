@@ -12,8 +12,6 @@ type SelectionParams struct {
 	limit     uint8
 }
 
-type TraverseCallback func(*html.Node) bool
-
 func hasIntersection(params map[string]any, attributes []html.Attribute, isStrict bool) bool {
 	if params == nil {
 		return true
@@ -46,16 +44,17 @@ func hasIntersection(params map[string]any, attributes []html.Attribute, isStric
 
 }
 
-func nameSelector(n *html.Node, params map[string]any) bool {
+func nameSelector(t Tag, params map[string]any) bool {
 	name, _ := params["_name_"]
 	canAddNode := false
+	n := t.root
 
 	if n.Type == html.ElementNode && n.Data == name {
 		canAddNode = hasIntersection(params, n.Attr, false)
 		target, ok := params["string"]
 
 		if ok {
-			str := getNodeStrings(n)
+			str := getNodeStrings(t)
 			if targetStr, ok := target.(string); ok {
 				canAddNode = flexMatch(str, targetStr, false)
 			}
@@ -66,15 +65,18 @@ func nameSelector(n *html.Node, params map[string]any) bool {
 }
 
 // use a callback to make the filtering logic only use traverse function
-func traverse(n *html.Node, limit uint8, recurse bool, cb TraverseCallback) uint8 {
+func traverse(tag Tag, limit uint8, recurse bool, cb TraverseCallback) uint8 {
+	n := tag.root
+
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		exit := cb(c)
+		t := initTag(c)
+		exit := cb(t)
 		if limit == 1 && exit {
 			return 0
 		}
 
 		if recurse {
-			status := traverse(c, limit, recurse, cb)
+			status := traverse(t, limit, recurse, cb)
 			if status == 0 {
 				return 0
 			}

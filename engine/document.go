@@ -1,5 +1,7 @@
 package engine
 
+/*
+
 import (
 	"fmt"
 	"strings"
@@ -240,3 +242,4 @@ func (d Document) Print(indentWidth ...int) string {
 	}
 	return builder.String()
 }
+*/
