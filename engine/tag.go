@@ -54,6 +54,7 @@ func (t Tag) FindFirst(name string, params ...map[string]any) Tag {
 	}
 	return tags[0]
 }
+
 func (t Tag) Find(selector string, params ...map[string]any) Tags {
 	sel, err := cascadia.Parse(selector)
 	if err != nil {
