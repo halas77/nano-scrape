@@ -7,24 +7,22 @@ import (
 )
 
 func main() {
-	requestTest()
-	// stringTest()
+	// requestTest()
+	stringTest()
 }
 
 func requestTest() {
 	scrape, err := engine.LoadDocument("http://127.0.0.1:5500/examples/basic/index.html")
 
 	if err != nil {
-		fmt.Println("Error parsing HTML:", err)
+		fmt.Println("Error loading document:", err)
 		return
 	}
 
-	// main := scrape.FindAll("span", map[string]any{"class": "item-count"})
-	scrape.Find("span", map[string]any{"class": "item-count"}, func(t engine.Tag) {
+	// Use Each() for a callback-based approach
+	scrape.Find("span", map[string]any{"class": "item-count"}).Each(func(t engine.Tag) {
 		fmt.Println(t.Print(), ", ")
 	})
-	// fmt.Println(main.Print())
-
 }
 
 func stringTest() {

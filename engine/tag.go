@@ -20,91 +20,96 @@ type Tag struct {
 type Tags []Tag
 type TagCallback func(Tag)
 
-func (t Tag) Find(name string, params map[string]any, cb TagCallback) {
-	var p map[string]any = make(map[string]any)
-
-	if params != nil {
-		p = params
-	}
+func (t Tag) Find(name string, params ...map[string]any) Tags {
+	var tags Tags
+	p := getParams(params)
 	p["_name_"] = name
 
 	selectionParams := SelectionParams{params: p}
-	traverse(t, t.limit, true, func(t Tag) bool {
-		isMatch := nameSelector(t, selectionParams.params)
-		if isMatch {
-			cb(t)
+	traverse(t, t.limit, true, func(match Tag) bool {
+		if nameSelector(match, selectionParams.params) {
+			tags = append(tags, match)
 		}
-		return isMatch
+		return false
 	})
-}
-
-func (t Tag) FindAll(name string, params ...map[string]any) Tags {
-	var tags = Tags{}
-	t.Find(name, params[0], func(t Tag) {
-		tags = append(tags, t)
-	})
-
 	return tags
 }
 
-func (t Tag) FindFirst(name string, params ...map[string]any) Tag {
-
+func (t Tag) FindOne(name string, params ...map[string]any) Tag {
 	t.limit = 1
-	var tags Tags = t.FindAll(name, params...)
-
-	if len(tags) == 0 {
-		return Tag{}
-	}
-	return tags[0]
+	return t.Find(name, params...).First()
 }
 
-func (t Tag) Select(selector string, params ...map[string]any) Tags {
+func (t Tag) Matches(params map[string]any) bool {
+	if params == nil {
+		return true
+	}
+	if !hasIntersection(params, t.Attrs, false) {
+		return false
+	}
+	if target, ok := params["string"]; ok {
+		if targetStr, ok := target.(string); ok {
+			return flexMatch(t.Text(), targetStr, false)
+		}
+	}
+	return true
+}
+
+func (t Tag) query(selector string, params map[string]any, cb func(Tag) bool) {
 	sel, err := cascadia.Parse(selector)
 	if err != nil {
-		return Tags{}
+		return
 	}
 
-	matches := cascadia.QueryAll(t.root, sel)
-	var tags = Tags{}
-
-	var p map[string]any
-	if len(params) > 0 {
-		p = params[0]
-	}
-
-	for _, n := range matches {
-		if p != nil {
-			if !hasIntersection(p, n.Attr, false) {
-				continue
-			}
-			if target, ok := p["string"]; ok {
-				str := getNodeStrings(t)
-				if targetStr, ok := target.(string); ok {
-					if !flexMatch(str, targetStr, false) {
-						continue
-					}
-				}
+	for _, n := range cascadia.QueryAll(t.root, sel) {
+		candidate := initTag(n)
+		if candidate.Matches(params) {
+			if cb(candidate) {
+				return
 			}
 		}
-		tags = append(tags, Tag{root: n, Name: n.Data, Attrs: n.Attr})
 	}
-	return tags
 }
 
-func (t Tag) SelectOne(selector string, params ...map[string]any) Tag {
-	return t.Select(selector, params...).First()
+func (t Tag) Select(selector string, params ...map[string]any) (results Tags) {
+	t.query(selector, getParams(params), func(match Tag) bool {
+		results = append(results, match)
+		return false
+	})
+	return
+}
+
+func (t Tag) SelectOne(selector string, params ...map[string]any) (result Tag) {
+	t.query(selector, getParams(params), func(match Tag) bool {
+		result = match
+		return true
+	})
+	return
 }
 
 func (t Tag) Text() string {
 	return strings.TrimSpace(getNodeStrings(t))
 }
 
-func (ts Tags) Select(selector string, params ...map[string]any) Tags {
-	var results Tags
+func (ts Tags) Select(selector string, params ...map[string]any) (results Tags) {
+	p := getParams(params)
 	for _, t := range ts {
-		results = append(results, t.Select(selector, params...)...)
+		t.query(selector, p, func(match Tag) bool {
+			results = append(results, match)
+			return false
+		})
 	}
-	return results
+	return
+}
+
+func (ts Tags) SelectOne(selector string, params ...map[string]any) Tag {
+	return ts.Select(selector, params...).First()
+}
+
+func (ts Tags) Each(cb func(Tag)) {
+	for _, t := range ts {
+		cb(t)
+	}
 }
 
 func (ts Tags) First() Tag {
@@ -114,6 +119,9 @@ func (ts Tags) First() Tag {
 	return ts[0]
 }
 
-func (ts Tags) SelectOne(selector string, params ...map[string]any) Tag {
-	return ts.Select(selector, params...).First()
+func getParams(params []map[string]any) map[string]any {
+	if len(params) > 0 {
+		return params[0]
+	}
+	return nil
 }
