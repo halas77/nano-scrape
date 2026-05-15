@@ -1,5 +1,7 @@
 package engine
 
+/*
+
 import (
 	"fmt"
 	"strings"
@@ -8,13 +10,13 @@ import (
 	"golang.org/x/net/html"
 )
 
-// adding strings function to get strings of a tag not sub tags concatenate them and append them to an array
 type Document struct {
-	Root      *html.Node
-	isStrict  bool
-	params    map[string]any
-	limit     uint8
-	isInitial bool
+	Root        *html.Node
+	isStrict    bool
+	params      map[string]any
+	limit       uint8
+	isInitial   bool
+	currentNode *html.Node
 }
 
 type Selection struct {
@@ -176,16 +178,26 @@ func (d Document) FindOne(name string, params ...map[string]any) Document {
 	return docs[0]
 }
 
-func (d Document) Print(root *html.Node, depth *uint16) string {
+func (d Document) Print(indentWidth ...int) string {
+
 	n := d.Root
-	if root != nil {
-		n = root
+	if d.currentNode != nil {
+		n = d.currentNode
 	}
 
-	depthCount := *depth
 	var builder strings.Builder
+	factor := 0
+	width := 0
+	if indentWidth != nil {
+		width = int(indentWidth[0])
+	}
+
+	if n.Type != html.DocumentNode {
+		factor = 3
+	}
 
 	if n.Type == html.TextNode {
+		builder.WriteString(strings.Repeat(" ", int(width)))
 		input := strings.TrimSpace(n.Data)
 
 		if input == "" {
@@ -196,27 +208,33 @@ func (d Document) Print(root *html.Node, depth *uint16) string {
 	}
 
 	if n.Type == html.ElementNode {
-		*depth++
-		builder.WriteString("\n")
+		builder.WriteString(strings.Repeat(" ", int(width)))
 		builder.WriteString("<")
 		builder.WriteString(n.Data)
 		builder.WriteString(">")
 	}
 
+	canIndent := false
+
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		input := d.Print(c, depth)
+		canIndent = true
+
+		d.currentNode = c
+		input := d.Print(width + factor)
+		if c == n.FirstChild {
+			builder.WriteString("\n")
+		}
 		if input != "" {
-			// builder.WriteString("\n")
-			// fmt.Println("been ")
 			builder.WriteString(input)
-			// builder.WriteString("\n")
+			builder.WriteString("\n")
 		}
 	}
 
 	if n.Type == html.ElementNode {
-		fmt.Println("Depth", *depth, "Data", n.Data, "count", depthCount)
-		*depth--
-		// builder.WriteString("\n")
+		if canIndent {
+			builder.WriteString(strings.Repeat(" ", int(width)))
+		}
+
 		builder.WriteString("</")
 		builder.WriteString(n.Data)
 		builder.WriteString(">")
@@ -224,3 +242,4 @@ func (d Document) Print(root *html.Node, depth *uint16) string {
 	}
 	return builder.String()
 }
+*/

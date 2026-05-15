@@ -7,6 +7,27 @@ import (
 )
 
 func main() {
+	requestTest()
+	// stringTest()
+}
+
+func requestTest() {
+	scrape, err := engine.LoadDocument("http://127.0.0.1:5500/examples/basic/index.html")
+
+	if err != nil {
+		fmt.Println("Error parsing HTML:", err)
+		return
+	}
+
+	// main := scrape.FindAll("span", map[string]any{"class": "item-count"})
+	scrape.Find("span", map[string]any{"class": "item-count"}, func(t engine.Tag) {
+		fmt.Println(t.Print(), ", ")
+	})
+	// fmt.Println(main.Print())
+
+}
+
+func stringTest() {
 	input := `
 			<div id="inventory-container">
 				<article class="data-card" data-category="electronics">
@@ -35,6 +56,7 @@ func main() {
 		`
 
 	root, err := engine.InitDocument(input)
+
 	if err != nil {
 		fmt.Println("Error parsing HTML:", err)
 		return
@@ -61,7 +83,7 @@ func main() {
 	}
 
 	fmt.Println("\n=== 4. Chained CSS Search ===")
-	brands := root.Select("article[data-category='electronics']").Select(".brand")
+	brands := root.Select("article[data-category='electronics']").Find(".brand")
 	for _, b := range brands {
 		fmt.Println("Brand in Electronics:", b.Print())
 	}

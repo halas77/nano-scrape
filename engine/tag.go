@@ -9,61 +9,55 @@ import (
 
 type Tag struct {
 	root  *html.Node
+	limit uint8
+
 	Name  string
 	Attrs []html.Attribute
 	Class string
 	Id    string
-	limit uint8
 }
 
 type Tags []Tag
+type TagCallback func(Tag)
 
-func InitDocument(input string) (Tag, error) {
-	reader := strings.NewReader(input)
-	node, err := html.Parse(reader)
-	document := Tag{root: node, Name: node.Data, Attrs: node.Attr}
-	if err != nil {
-		return Tag{}, err
-	}
-
-	return document, nil
-}
-
-func (t Tag) FindAll(name string, params ...map[string]any) Tags {
-	var tags = Tags{}
+func (t Tag) Find(name string, params map[string]any, cb TagCallback) {
 	var p map[string]any = make(map[string]any)
 
-	if len(params) > 0 {
-		p = params[0]
+	if params != nil {
+		p = params
 	}
 	p["_name_"] = name
 
 	selectionParams := SelectionParams{params: p}
-	traverse(t.root, t.limit, true, func(n *html.Node) bool {
-		isMatch := nameSelector(n, selectionParams.params)
+	traverse(t, t.limit, true, func(t Tag) bool {
+		isMatch := nameSelector(t, selectionParams.params)
 		if isMatch {
-			tags = append(tags, Tag{root: n, Name: n.Data, Attrs: n.Attr, Class: "", Id: ""})
+			cb(t)
 		}
 		return isMatch
 	})
+}
+
+func (t Tag) FindAll(name string, params ...map[string]any) Tags {
+	var tags = Tags{}
+	t.Find(name, params[0], func(t Tag) {
+		tags = append(tags, t)
+	})
+
 	return tags
 }
 
 func (t Tag) FindFirst(name string, params ...map[string]any) Tag {
-	var p map[string]any = make(map[string]any)
-
-	if len(params) > 0 {
-		p = params[0]
-	}
 
 	t.limit = 1
-	var tags Tags = t.FindAll(name, p)
+	var tags Tags = t.FindAll(name, params...)
 
 	if len(tags) == 0 {
 		return Tag{}
 	}
 	return tags[0]
 }
+
 func (t Tag) Select(selector string, params ...map[string]any) Tags {
 	sel, err := cascadia.Parse(selector)
 	if err != nil {
@@ -84,7 +78,7 @@ func (t Tag) Select(selector string, params ...map[string]any) Tags {
 				continue
 			}
 			if target, ok := p["string"]; ok {
-				str := getNodeStrings(n)
+				str := getNodeStrings(t)
 				if targetStr, ok := target.(string); ok {
 					if !flexMatch(str, targetStr, false) {
 						continue
@@ -97,8 +91,12 @@ func (t Tag) Select(selector string, params ...map[string]any) Tags {
 	return tags
 }
 
-func (t Tag) SelectOne(selector string, params ...map[string]any) Tag {
+func (t Tag) FindOne(selector string, params ...map[string]any) Tag {
 	return t.Select(selector, params...).First()
+}
+
+func (t Tag) Text() string {
+	return strings.TrimSpace(getNodeStrings(t))
 }
 
 func (ts Tags) Select(selector string, params ...map[string]any) Tags {

@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Scraper's Playground - Pro Edition</title>
+    <style>
+      :root {
+        --primary: #3498db;
+        --dark: #2c3e50;
+        --light-bg: #f8f9fa;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: #eef2f3;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        padding: 40px;
+      }
+
+      /* Main Layout */
+      .wrapper {
+        display: flex;
+        width: 1000px;
+        gap: 20px;
+      }
+
+      /* Styled Sidebar List */
+      .sidebar {
+        width: 250px;
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        height: fit-content;
+      }
+      .sidebar h3 {
+        font-size: 1.1em;
+        color: var(--dark);
+        margin-top: 0;
+        border-bottom: 2px solid var(--light-bg);
+        padding-bottom: 10px;
+      }
+
+      .category-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .category-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 15px;
+        margin: 5px 0;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: var(--light-bg);
+        color: var(--dark);
+      }
+      .category-item:hover {
+        background: var(--primary);
+        color: white;
+        transform: translateX(5px);
+      }
+      .item-count {
+        font-size: 0.8em;
+        opacity: 0.7;
+        background: rgba(0, 0, 0, 0.1);
+        padding: 2px 8px;
+        border-radius: 10px;
+      }
+
+      /* Main Content Area */
+      .main-panel {
+        flex-grow: 1;
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      }
+      .data-card {
+        border-left: 4px solid var(--primary);
+        background: var(--light-bg);
+        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 0 8px 8px 0;
+      }
+      .product-title {
+        margin: 0 0 5px 0;
+        font-size: 1.25em;
+      }
+      .price-tag {
+        color: #27ae60;
+        font-weight: bold;
+        font-size: 1.1em;
+      }
+
+      #dynamic-msg {
+        font-size: 0.9em;
+        color: #7f8c8d;
+        margin-bottom: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <aside class="sidebar">
+        <h3>Categories</h3>
+        <ul class="category-list">
+          <li class="category-item" data-id="cat_1">
+            <span>Electronics</span>
+            <span class="item-count">12</span>
+          </li>
+          <li class="category-item" data-id="cat_2">
+            <span>Home Office</span>
+            <span class="item-count">8</span>
+          </li>
+          <li class="category-item" data-id="cat_3">
+            <span>Wearables</span>
+            <span class="item-count">5</span>
+          </li>
+          <li class="category-item" data-id="cat_4">
+            <span>Cybernetics</span>
+            <span class="item-count">2</span>
+          </li>
+        </ul>
+      </aside>
+
+      <main class="main-panel">
+        <h1>Inventory Dashboard</h1>
+        <p id="dynamic-msg">Connecting to database...</p>
+
+        <div id="inventory-container">
+          <article class="data-card" id="data-card-id">
+            <h2 class="product-title">Neural Link Headset</h2>
+            <div class="info">
+              <span class="price-tag">$899.99</span>
+              <p>Direct brain-to-text interface. No typing required.</p>
+            </div>
+          </article>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      // Simulate JavaScript loading more items into the list
+      setTimeout(() => {
+        document.getElementById("dynamic-msg").innerHTML =
+          "Showing <strong>verified</strong> stock items.";
+
+        const container = document.getElementById("inventory-container");
+        const newItem = document.createElement("article");
+        newItem.className = "data-card";
+        newItem.style.borderLeftColor = "#e67e22"; // Different color for JS items
+        newItem.innerHTML = `
+            <h2 class="product-title">Atmospheric Water Generator</h2>
+            <div class="info">
+                <span class="price-tag">$2,450.00</span>
+                <p>Pull 20 liters of fresh water daily from thin air.</p>
+            </div>
+        `;
+        container.appendChild(newItem);
+      }, 1200);
+    </script>
+  </body>
+</html>
