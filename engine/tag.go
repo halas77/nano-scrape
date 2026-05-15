@@ -64,7 +64,7 @@ func (t Tag) FindFirst(name string, params ...map[string]any) Tag {
 	}
 	return tags[0]
 }
-func (t Tag) Find(selector string, params ...map[string]any) Tags {
+func (t Tag) Select(selector string, params ...map[string]any) Tags {
 	sel, err := cascadia.Parse(selector)
 	if err != nil {
 		return Tags{}
@@ -97,14 +97,14 @@ func (t Tag) Find(selector string, params ...map[string]any) Tags {
 	return tags
 }
 
-func (t Tag) FindOne(selector string, params ...map[string]any) Tag {
-	return t.Find(selector, params...).First()
+func (t Tag) SelectOne(selector string, params ...map[string]any) Tag {
+	return t.Select(selector, params...).First()
 }
 
-func (ts Tags) Find(selector string, params ...map[string]any) Tags {
+func (ts Tags) Select(selector string, params ...map[string]any) Tags {
 	var results Tags
 	for _, t := range ts {
-		results = append(results, t.Find(selector, params...)...)
+		results = append(results, t.Select(selector, params...)...)
 	}
 	return results
 }
@@ -117,5 +117,5 @@ func (ts Tags) First() Tag {
 }
 
 func (ts Tags) FindOne(selector string, params ...map[string]any) Tag {
-	return ts.Find(selector, params...).First()
+	return ts.Select(selector, params...).First()
 }
