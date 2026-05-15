@@ -19,8 +19,11 @@ func requestTest() {
 		return
 	}
 
-	main := scrape.FindOne("span", map[string]any{"class": "item-count"})
-	fmt.Println(main.Print())
+	// main := scrape.FindAll("span", map[string]any{"class": "item-count"})
+	scrape.Find("span", map[string]any{"class": "item-count"}, func(t engine.Tag) {
+		fmt.Println(t.Print(), ", ")
+	})
+	// fmt.Println(main.Print())
 
 }
 
@@ -60,27 +63,27 @@ func stringTest() {
 	}
 
 	fmt.Println("=== 1. CSS Selector Search (.price-tag) ===")
-	prices := root.Find(".price-tag")
+	prices := root.Select(".price-tag")
 	for _, p := range prices {
 		fmt.Println("Price found:", p.Print())
 	}
 
 	fmt.Println("\n=== 2. CSS + Attribute Filtering (category: electronics) ===")
-	electronics := root.Find("article.data-card", map[string]any{"data-category": "electronics"})
+	electronics := root.Select("article.data-card", map[string]any{"data-category": "electronics"})
 	for _, e := range electronics {
 		brand := e.FindOne("span", map[string]any{"class": "brand"})
 		fmt.Printf("Electronic Item Brand: %s\n", brand.Print())
 	}
 
 	fmt.Println("\n=== 3. CSS + Deep Text Filtering ('Out of Stock') ===")
-	outOfStockItems := root.Find("article", map[string]any{"string": "Out of Stock"})
+	outOfStockItems := root.Select("article", map[string]any{"string": "Out of Stock"})
 	for _, item := range outOfStockItems {
 		model := item.FindOne(".model")
 		fmt.Printf("Item Out of Stock: %s\n", model.Print())
 	}
 
 	fmt.Println("\n=== 4. Chained CSS Search ===")
-	brands := root.Find("article[data-category='electronics']").Find(".brand")
+	brands := root.Select("article[data-category='electronics']").Find(".brand")
 	for _, b := range brands {
 		fmt.Println("Brand in Electronics:", b.Print())
 	}

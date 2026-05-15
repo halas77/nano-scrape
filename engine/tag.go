@@ -18,13 +18,13 @@ type Tag struct {
 }
 
 type Tags []Tag
+type TagCallback func(Tag)
 
-func (t Tag) FindAll(name string, params ...map[string]any) Tags {
-	var tags = Tags{}
+func (t Tag) Find(name string, params map[string]any, cb TagCallback) {
 	var p map[string]any = make(map[string]any)
 
-	if len(params) > 0 {
-		p = params[0]
+	if params != nil {
+		p = params
 	}
 	p["_name_"] = name
 
@@ -32,22 +32,25 @@ func (t Tag) FindAll(name string, params ...map[string]any) Tags {
 	traverse(t, t.limit, true, func(t Tag) bool {
 		isMatch := nameSelector(t, selectionParams.params)
 		if isMatch {
-			tags = append(tags, t)
+			cb(t)
 		}
 		return isMatch
 	})
+}
+
+func (t Tag) FindAll(name string, params ...map[string]any) Tags {
+	var tags = Tags{}
+	t.Find(name, params[0], func(t Tag) {
+		tags = append(tags, t)
+	})
+
 	return tags
 }
 
 func (t Tag) FindFirst(name string, params ...map[string]any) Tag {
-	var p map[string]any = make(map[string]any)
-
-	if len(params) > 0 {
-		p = params[0]
-	}
 
 	t.limit = 1
-	var tags Tags = t.FindAll(name, p)
+	var tags Tags = t.FindAll(name, params...)
 
 	if len(tags) == 0 {
 		return Tag{}
@@ -55,7 +58,7 @@ func (t Tag) FindFirst(name string, params ...map[string]any) Tag {
 	return tags[0]
 }
 
-func (t Tag) Find(selector string, params ...map[string]any) Tags {
+func (t Tag) Select(selector string, params ...map[string]any) Tags {
 	sel, err := cascadia.Parse(selector)
 	if err != nil {
 		return Tags{}
@@ -89,7 +92,7 @@ func (t Tag) Find(selector string, params ...map[string]any) Tags {
 }
 
 func (t Tag) FindOne(selector string, params ...map[string]any) Tag {
-	return t.Find(selector, params...).First()
+	return t.Select(selector, params...).First()
 }
 
 func (t Tag) Text() string {
@@ -99,7 +102,7 @@ func (t Tag) Text() string {
 func (ts Tags) Find(selector string, params ...map[string]any) Tags {
 	var results Tags
 	for _, t := range ts {
-		results = append(results, t.Find(selector, params...)...)
+		results = append(results, t.Select(selector, params...)...)
 	}
 	return results
 }
