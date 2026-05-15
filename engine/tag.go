@@ -91,7 +91,7 @@ func (t Tag) Select(selector string, params ...map[string]any) Tags {
 	return tags
 }
 
-func (t Tag) FindOne(selector string, params ...map[string]any) Tag {
+func (t Tag) SelectOne(selector string, params ...map[string]any) Tag {
 	return t.Select(selector, params...).First()
 }
 
@@ -114,6 +114,6 @@ func (ts Tags) First() Tag {
 	return ts[0]
 }
 
-func (ts Tags) FindOne(selector string, params ...map[string]any) Tag {
+func (ts Tags) SelectOne(selector string, params ...map[string]any) Tag {
 	return ts.Select(selector, params...).First()
 }
