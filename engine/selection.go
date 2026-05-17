@@ -50,7 +50,11 @@ func nameSelector(t Tag, params map[string]any) bool {
 	n := t.root
 
 	if n.Type == html.ElementNode && n.Data == name {
-		canAddNode = hasIntersection(params, n.Attr, false)
+		if params == nil {
+			canAddNode = true
+		} else {
+			canAddNode = hasIntersection(params, n.Attr, false)
+		}
 		target, ok := params["string"]
 
 		if ok {
