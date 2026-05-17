@@ -1,5 +1,52 @@
 package engine
 
+func getTestText() string {
+	return `<body>
+    <div class="wrapper">
+      <aside class="sidebar">
+        <h3>Categories</h3>
+        <ul class="category-list">
+          <li class="category-item" data-id="cat_1">
+            <span>Electronics</span>
+            <span class="item-count">12</span>
+          </li>
+          <li class="category-item" data-id="cat_2">
+            <span>Home Office</span>
+            <span class="item-count">8</span>
+          </li>
+          <li class="category-item" data-id="cat_3">
+            <span>Wearables</span>
+            <span class="item-count">5</span>
+          </li>
+          <li class="category-item" data-id="cat_4">
+            <span>Cybernetics</span>
+            <span class="item-count">2</span>
+          </li>
+        </ul>
+      </aside>
+
+      <main class="main-panel">
+        <h1>Inventory Dashboard</h1>
+        <p id="dynamic-msg">Connecting to database...</p>
+
+        <div id="inventory-container">
+          <article class="data-card" id="data-card-id">
+            <h2 class="product-title">Neural Link Headset</h2>
+            <div class="info">
+              <span class="price-tag">$899.99</span>
+              <p>Direct brain-to-text interface. No typing required.</p>
+            </div>
+          </article>
+        </div>
+      </main>
+    </div>
+
+    <script>
+     
+    </script>
+  </body>`
+}
+
 /*
 
 import (
