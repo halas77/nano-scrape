@@ -2,9 +2,11 @@ package engine
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/halas77/goscrape/engine"
+	"golang.org/x/net/html"
 )
 
 func generateMockHTML(count int) string {
@@ -18,26 +20,34 @@ func generateMockHTML(count int) string {
 
 // BenchmarkFind benchmarks the Find method
 func BenchmarkFind(b *testing.B) {
-	scrape, err := engine.InitDocument(generateMockHTML(50))
+	// scrape, err := engine.InitDocument(generateMockHTML(50))
 
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+	reader := strings.NewReader(generateMockHTML(50))
+	node, _ := html.Parse(reader)
 
-	// 1. Setup the data needed for the test
-	name := "main"
-	// params := map[string]any{"class": "main-panel"}
-	callback := func(foundTag engine.Tag) {
-		// Keep the callback minimal so we bench the method, not the callback logic
-	}
+	var scrape = engine.InitTag(node)
+
+	// // 1. Setup the data needed for the test
+	// // name := "main"
+	// // params := map[string]any{"class": "main-panel"}
+
+	// callback := func(foundTag engine.Tag) {
+	// 	// Keep the callback minimal so we bench the method, not the callback logic
+	// }
 
 	// 2. Reset the timer to exclude the setup time above
 
-	b.StartTimer() // locate the position we will start the timer for the bench test
+	// b.StartTimer() // locate the position we will start the timer for the bench test
 	// 3. Run the actual loop
 	for b.Loop() {
-		scrape.Find(name, nil, callback)
+		// scrape.Find(name, nil, callback)
+		scrape.Fi(func(t engine.Tag) {
+			//
+		})
 	}
 }
 

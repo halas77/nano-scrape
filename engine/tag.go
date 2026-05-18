@@ -20,6 +20,13 @@ type Tag struct {
 type Tags []Tag
 type TagCallback func(Tag)
 
+func (t Tag) Fi(cb TagCallback) {
+	traverse(t, 0, false, func(t Tag) bool {
+		cb(t)
+		return true
+	})
+}
+
 func (t Tag) Find(name string, params map[string]any, cb TagCallback) {
 	var p map[string]any = make(map[string]any)
 

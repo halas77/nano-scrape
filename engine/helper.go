@@ -65,3 +65,7 @@ func (t Tag) FirstChild() Tag {
 func (t Tag) LastChild() Tag {
 	return initTag(t.root.LastChild)
 }
+
+func InitTag(node *html.Node) Tag {
+	return initTag(node)
+}
