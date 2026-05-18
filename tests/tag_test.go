@@ -1,64 +1,72 @@
-package engine
+package tests
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/halas77/goscrape/engine"
 )
 
-func generateMockHTML(count int) string {
-	html := "<html><body>"
-	for i := range count {
-		html += fmt.Sprintf(`<div class="category-item">Category %d</div>`, i)
+// A sample HTML content to use in benchmarks.
+const benchmarkHTML = `
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Benchmark Page</title>
+</head>
+<body>
+	<div class="container">
+		<header>
+			<h1>Welcome to GoScrape Benchmark</h1>
+		</header>
+		<main>
+			<p class="intro">This is a paragraph used to benchmark the performance of the library.</p>
+			<ul class="item-list">
+				<li class="item" id="item-1">First item</li>
+				<li class="item" id="item-2">Second item</li>
+				<li class="item" id="item-3">Third item</li>
+			</ul>
+		</main>
+		<footer>
+			<p>Footer content here.</p>
+		</footer>
+	</div>
+</body>
+</html>
+`
+
+// BenchmarkInitDocument benchmarks how long it takes to parse an HTML document.
+func BenchmarkInitDocument(b *testing.B) {
+	// Enable memory allocation reporting to see how many bytes and allocations are made.
+	b.ReportAllocs()
+
+	// b.N is dynamically set by Go's testing tool. The loop will run b.N times
+	// to get an accurate measurement of the function's execution time.
+	for i := 0; i < b.N; i++ {
+		_, err := engine.InitDocument(benchmarkHTML)
+		if err != nil {
+			b.Fatal(err)
+		}
 	}
-	html += "</body></html>"
-	return html
 }
 
-// BenchmarkFind benchmarks the Find method
-func BenchmarkFind(b *testing.B) {
-	scrape, err := engine.InitDocument(generateMockHTML(50))
-
+// BenchmarkTagSelect benchmarks how fast we can select elements using CSS selectors.
+func BenchmarkTagSelect(b *testing.B) {
+	// 1. Setup: Parse the document once before starting the benchmark.
+	doc, err := engine.InitDocument(benchmarkHTML)
 	if err != nil {
-		fmt.Println(err)
-		return
+		b.Fatal(err)
 	}
 
-	// 1. Setup the data needed for the test
-	name := "main"
-	// params := map[string]any{"class": "main-panel"}
-	callback := func(foundTag engine.Tag) {
-		// Keep the callback minimal so we bench the method, not the callback logic
-	}
+	// 2. Reset the timer to exclude the setup time (parsing) from the benchmark results.
+	b.ResetTimer()
+	b.ReportAllocs()
 
-	// 2. Reset the timer to exclude the setup time above
-
-	b.StartTimer() // locate the position we will start the timer for the bench test
-	// 3. Run the actual loop
-	for b.Loop() {
-		scrape.Find(name, nil, callback)
+	// 3. Run the selection operation b.N times.
+	for i := 0; i < b.N; i++ {
+		// Benchmark selecting all list items with class "item"
+		results := doc.Select("li.item")
+		if len(results) == 0 {
+			b.Fatal("expected to find items")
+		}
 	}
 }
-
-// BenchmarkFindAll benchmarks the FindAll method
-/*func BenchmarkFindAll(b *testing.B) {
-	t := Tag{limit: 10}
-	name := "test-tag"
-	params := map[string]any{"status": "active"}
-
-	for b.Loop() {
-		_ = t.FindAll(name, params)
-	}
-}
-
-// BenchmarkFind_NilParams benchmarks how the code handles nil map inputs
-func BenchmarkFind_NilParams(b *testing.B) {
-	t := Tag{limit: 10}
-	name := "test-tag"
-
-	for b.Loop() {
-		t.Find(name, nil, func(foundTag Tag) {})
-	}
-}
-*/
