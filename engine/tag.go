@@ -21,6 +21,7 @@ type Tags []Tag
 type TagCallback func(Tag)
 
 func (t Tag) Find(name string, params map[string]any, cb TagCallback) {
+
 	var p map[string]any = make(map[string]any)
 
 	if params != nil {
@@ -31,6 +32,7 @@ func (t Tag) Find(name string, params map[string]any, cb TagCallback) {
 	selectionParams := SelectionParams{params: p}
 	traverse(t, t.limit, true, func(t Tag) bool {
 		isMatch := nameSelector(t, selectionParams.params)
+
 		if isMatch {
 			cb(t)
 		}
