@@ -8,6 +8,8 @@ import (
 
 func main() {
 	// requestTest()
+	stringTest()
+	exportDemo()
 	// stringTest()
 
 	// proxyTester()
@@ -122,6 +124,86 @@ func stringTest() {
 	brands := root.Select("article[data-category='electronics']").Select(".brand")
 	for _, b := range *brands {
 		fmt.Println("Brand in Electronics:", b.Print())
+	}
+}
+
+func exportDemo() {
+	input := `
+			<div id="store-front">
+				<div class="product-item" data-sku="SKU-NEURAL">
+					<h3 class="name">Neural Link V1</h3>
+					<span class="price">$1200.00</span>
+					<a href="/products/neural" class="link">View Details</a>
+				</div>
+				<div class="product-item" data-sku="SKU-GLOVE">
+					<h3 class="name">Haptic Glove Pro</h3>
+					<span class="price">$650.00</span>
+					<a href="/products/haptic" class="link">View Details</a>
+				</div>
+			</div>
+		`
+
+	root, err := engine.InitDocument(input)
+	if err != nil {
+		fmt.Println("Error parsing HTML:", err)
+		return
+	}
+
+	products := root.Select(".product-item")
+
+	fmt.Println("\n=== 5. Built-in Structured Export mapping (Tag mapping to structured JSON/CSV) ===")
+	// Map extracted data with both text nodes and attributes (with @ prefix)
+	mapping := map[string]string{
+		"sku":   "@data-sku",
+		"name":  "h3.name",
+		"price": "span.price",
+		"url":   "a.link @href",
+	}
+
+	mappedData := products.Map(mapping)
+
+	// 1. Export structured data to JSON
+	jsonBytes, err := engine.ExportJSON(mappedData)
+	if err != nil {
+		fmt.Println("Error exporting JSON:", err)
+		return
+	}
+	fmt.Println("Structured Mapped JSON:\n", string(jsonBytes))
+
+	// 2. Export structured data to CSV
+	csvStr, err := engine.ExportCSV(mappedData)
+	if err != nil {
+		fmt.Println("Error exporting CSV:", err)
+		return
+	}
+	fmt.Println("Structured Mapped CSV:\n", csvStr)
+
+	// 3. Write them directly to files
+	err = engine.WriteMappedJSON("scraped_products.json", mappedData)
+	if err != nil {
+		fmt.Println("Error writing JSON file:", err)
+	} else {
+		fmt.Println("Successfully wrote structured data to: scraped_products.json")
+	}
+
+	err = engine.WriteMappedCSV("scraped_products.csv", mappedData)
+	if err != nil {
+		fmt.Println("Error writing CSV file:", err)
+	} else {
+		fmt.Println("Successfully wrote structured data to: scraped_products.csv")
+	}
+
+	fmt.Println("\n=== 6. Direct Tags Collection Export (JSON/CSV) ===")
+	// Direct Tags to JSON
+	directJSON, err := products.ToJSON()
+	if err == nil {
+		fmt.Println("Direct Tags JSON preview (first 250 chars):\n", string(directJSON)[:250]+"...")
+	}
+
+	// Direct Tags to CSV
+	directCSV, err := products.ToCSV()
+	if err == nil {
+		fmt.Println("Direct Tags CSV:\n", directCSV)
 	}
 }
 
