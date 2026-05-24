@@ -6,7 +6,6 @@ import (
 	"github.com/halas77/goscrape/engine"
 )
 
-// A sample HTML content to use in benchmarks.
 const benchmarkHTML = `
 <!DOCTYPE html>
 <html>
