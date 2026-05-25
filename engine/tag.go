@@ -20,8 +20,15 @@ type Tag struct {
 type Tags []Tag
 type TagCallback func(Tag)
 
-func (t Tag) Find(name string, params map[string]any, cb TagCallback) {
+func (ts Tags) First() Tag {
 
+	if len(ts) == 0 {
+		return Tag{}
+	}
+	return ts[0]
+}
+
+func (t Tag) Find(name string, params map[string]any, cb TagCallback) {
 	var p map[string]any = make(map[string]any)
 
 	if params != nil {
@@ -41,8 +48,13 @@ func (t Tag) Find(name string, params map[string]any, cb TagCallback) {
 }
 
 func (t Tag) FindAll(name string, params ...map[string]any) Tags {
+
+	var p map[string]any
+	if len(params) > 0 {
+		p = params[0]
+	}
 	var tags = Tags{}
-	t.Find(name, params[0], func(t Tag) {
+	t.Find(name, p, func(t Tag) {
 		tags = append(tags, t)
 	})
 
@@ -50,16 +62,11 @@ func (t Tag) FindAll(name string, params ...map[string]any) Tags {
 }
 
 func (t Tag) FindFirst(name string, params ...map[string]any) Tag {
-
 	t.limit = 1
-	var tags Tags = t.FindAll(name, params...)
-
-	if len(tags) == 0 {
-		return Tag{}
-	}
-	return tags[0]
+	return t.FindAll(name, params...).First()
 }
 
+// Select Functionality for css selectors
 func (t Tag) Select(selector string, params ...map[string]any) Tags {
 	sel, err := cascadia.Parse(selector)
 	if err != nil {
@@ -93,7 +100,7 @@ func (t Tag) Select(selector string, params ...map[string]any) Tags {
 	return tags
 }
 
-func (t Tag) FindOne(selector string, params ...map[string]any) Tag {
+func (t Tag) SelectOne(selector string, params ...map[string]any) Tag {
 	return t.Select(selector, params...).First()
 }
 
@@ -101,7 +108,7 @@ func (t Tag) Text() string {
 	return strings.TrimSpace(getNodeStrings(t))
 }
 
-func (ts Tags) Find(selector string, params ...map[string]any) Tags {
+func (ts Tags) Select(selector string, params ...map[string]any) Tags {
 	var results Tags
 	for _, t := range ts {
 		results = append(results, t.Select(selector, params...)...)
@@ -109,13 +116,6 @@ func (ts Tags) Find(selector string, params ...map[string]any) Tags {
 	return results
 }
 
-func (ts Tags) First() Tag {
-	if len(ts) == 0 {
-		return Tag{}
-	}
-	return ts[0]
-}
-
-func (ts Tags) FindOne(selector string, params ...map[string]any) Tag {
-	return ts.Find(selector, params...).First()
+func (ts Tags) SelectOne(selector string, params ...map[string]any) Tag {
+	return ts.Select(selector, params...).First()
 }

@@ -75,10 +75,41 @@ func BenchmarkFindFirst(b *testing.B) {
 	}
 
 	name := "span"
-	params := map[string]any{"id": "footer-id"}
+	params := map[string]any{"id": "header-id"}
 
 	b.StartTimer()
 	for b.Loop() {
 		scrape.FindFirst(name, params)
+	}
+}
+
+// Test select functionality
+func BenchmarkSelectOne(b *testing.B) {
+	scrape, err := engine.InitDocument(generateMockHTML(50))
+	if err != nil {
+		return
+	}
+
+	selector := "#header-id"
+	// params := map[string]any{"id": "footer-id"}
+
+	b.StartTimer()
+	for b.Loop() {
+		scrape.SelectOne(selector)
+	}
+}
+
+func BenchmarkSelectAll(b *testing.B) {
+	scrape, err := engine.InitDocument(generateMockHTML(50))
+	if err != nil {
+		return
+	}
+
+	selector := "#footer-id"
+	// params := map[string]any{"id": "footer-id"}
+
+	b.StartTimer()
+	for b.Loop() {
+		scrape.Select(selector)
 	}
 }
