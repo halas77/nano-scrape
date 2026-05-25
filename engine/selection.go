@@ -5,12 +5,12 @@ import (
 )
 
 type SelectionParams struct {
-	name      string
-	className string
-	id        string
-	params    map[string]any
-	limit     uint8
+	name   string
+	params map[string]any
+	attrs  []*Attribute
 }
+
+// Add Traverse for selection Params
 
 func hasIntersection(params map[string]any, attributes []html.Attribute, isStrict bool) bool {
 	if params == nil {
