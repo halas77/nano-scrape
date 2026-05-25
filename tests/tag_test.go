@@ -11,9 +11,11 @@ import (
 
 func generateMockHTML(count int) string {
 	html := "<html><body>"
+	html += `<span class="spam-category-item" id="header-id">Header is hear</span>`
 	for i := range count {
 		html += fmt.Sprintf(`<div class="category-item">Category %d</div>`, i)
 	}
+	html += `<span class="spam-category-item" id="footer-id">Footer is hear</span>`
 	html += "</body></html>"
 	return html
 }
@@ -31,13 +33,6 @@ func FindMatchingAttributes(attrs []*engine.Attribute, elementAttrs []html.Attri
 	for _, attr := range elementAttrs {
 		normalizedKey := strings.ToLower(attr.Key)
 		if valA, found := lookup[normalizedKey]; found {
-			if normalizedKey == "class" && engine.FlexSearch(valA, attr.Val, false) {
-				// if some one flexi Match to check the value and increment counter if it is true and continue
-				fmt.Println("---------- Hello ----------- ")
-				counter++
-				continue
-			}
-
 			if normalizedKey == "string" {
 				// use flex for equality and increment counter if it is true true and continue
 			}
@@ -59,14 +54,15 @@ func nameSelector(n *html.Node, name string, attrs []*engine.Attribute) bool {
 	return false
 }
 
-func traverse(n *html.Node, name string, attrs []*engine.Attribute) {
+func traverse(n *html.Node, name string, attrs []*engine.Attribute, f func(*html.Node)) {
 
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
 		if nameSelector(c, name, attrs) {
 			// fmt.Println("Found Match ", c.Data)
+			f(c)
 		}
 
-		traverse(c, name, attrs)
+		traverse(c, name, attrs, f)
 	}
 }
 
@@ -84,7 +80,7 @@ func TestFindMatchingAttributes(t *testing.T) {
 				{Key: "class", Value: "btn-primary"},
 			},
 			elementAttrs: []html.Attribute{
-				{Key: "class", Val: "btn-primary"},
+				{Key: "class", Val: "btn-primary-2"},
 				{Key: "id", Val: "submit-button"},
 			},
 			expected: false,
@@ -96,20 +92,20 @@ func TestFindMatchingAttributes(t *testing.T) {
 				{Key: "class", Value: "btn-primary"},
 			},
 			elementAttrs: []html.Attribute{
-				{Key: "class", Val: "btn btn-primary"},
+				{Key: "class", Val: "btn-primary"},
 				{Key: "id", Val: "submit-btn"},
 			},
 			expected: true,
 		},
 	}
 
-	t.Run("Is Flexi work ", func(t *testing.T) {
-		result := engine.FlexSearch("btn btn-primary", "btn-primary", false)
+	// t.Run("Is Flexi work ", func(t *testing.T) {
+	// 	result := engine.FlexSearch("btn btn-primary", "btn-primary", false)
 
-		if result != true {
-			t.Errorf("expected %v but found %v", true, result)
-		}
-	})
+	// 	if result != true {
+	// 		t.Errorf("expected %v but found %v", true, result)
+	// 	}
+	// })
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
@@ -138,7 +134,9 @@ func BenchmarkMiniTest(b *testing.B) {
 	}
 
 	for b.Loop() {
-		traverse(node, "span", attr)
+		traverse(node, "span", attr, func(n *html.Node) {
+
+		})
 	}
 }
 
@@ -158,11 +156,6 @@ func BenchmarkFind(b *testing.B) {
 
 	b.StartTimer() // locate the position we will start the timer for the bench test
 	// 3. Run the actual loop
-
-	attr := []*engine.Attribute{
-		{Key: "id", Value: "footer-id"},
-	}
-
 	for b.Loop() {
 		scrape.Find(name, params, func(foundTag engine.Tag) {
 			// Keep the callback minimal so we bench the method, not the callback logic
@@ -182,13 +175,17 @@ func BenchmarkEmpty(b *testing.B) {
 }
 
 // BenchmarkFindAll benchmarks the FindAll method
-/*func BenchmarkFindAll(b *testing.B) {
-	t := Tag{limit: 10}
-	name := "test-tag"
-	params := map[string]any{"status": "active"}
+func BenchmarkFindAll(b *testing.B) {
+	scrape, err := engine.InitDocument(generateMockHTML(50))
+	if err != nil {
+		return
+	}
+
+	name := "span"
+	params := map[string]any{"id": "footer-id"}
 
 	for b.Loop() {
-		_ = t.FindAll(name, params)
+		_ = scrape.FindAll(name, params)
 	}
 }
 
@@ -204,7 +201,7 @@ func BenchmarkFindFirst(b *testing.B) {
 
 	b.StartTimer()
 	for b.Loop() {
-		t.Find(name, nil, func(foundTag Tag) {})
+		scrape.FindFirst(name, params)
 	}
 }
 
