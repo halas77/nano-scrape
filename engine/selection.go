@@ -50,6 +50,7 @@ func nameSelector(t Tag, params map[string]any) bool {
 	n := t.root
 
 	if n.Type == html.ElementNode && n.Data == name {
+
 		if params == nil {
 			canAddNode = true
 		} else {

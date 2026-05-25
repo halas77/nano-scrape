@@ -10,6 +10,11 @@ import (
 
 type TraverseCallback func(Tag) bool
 
+type Attribute struct {
+	Key   string
+	Value string
+}
+
 func initTag(node *html.Node) Tag {
 	return Tag{root: node, Name: node.Data, Attrs: node.Attr}
 }
