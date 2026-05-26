@@ -8,8 +8,9 @@ import (
 )
 
 type Tag struct {
-	root  *html.Node
-	limit uint8
+	root      *html.Node
+	limit     uint8
+	selection *SelectionParams
 
 	Name  string
 	Attrs []html.Attribute
@@ -28,17 +29,30 @@ func (ts Tags) First() Tag {
 	return ts[0]
 }
 
-func (t Tag) Find(name string, params map[string]any, cb TagCallback) {
-	var p map[string]any = make(map[string]any)
+func (t Tag) Find(name string, attr []*Attribute, cb TagCallback) {
 
-	if params != nil {
-		p = params
+	if t.selection == nil {
+		t.selection = &SelectionParams{}
 	}
-	p["_name_"] = name
 
-	selectionParams := SelectionParams{params: p}
-	traverse(t, t.limit, true, func(t Tag) bool {
-		isMatch := nameSelector(t, selectionParams.params)
+	if attr != nil {
+		// attrs := make([]*Attribute, 0, len(attr))
+		// for i := range attr {
+		// 	a := attr[i]
+		// 	attrs = append(attrs, &a)
+		// }
+
+		t.selection.attrs = attr
+	}
+
+	t.selection.name = name
+	t.selection.limit = t.limit
+	selection := t.selection
+	selection.recurse = true
+
+	selection.traverse(t, func(t Tag) bool {
+		// fmt.Println("tag ", t.Name)
+		isMatch := selection.nameSelector(t)
 		if isMatch {
 			cb(t)
 		}
@@ -46,14 +60,10 @@ func (t Tag) Find(name string, params map[string]any, cb TagCallback) {
 	})
 }
 
-func (t Tag) FindAll(name string, params ...map[string]any) Tags {
+func (t Tag) FindAll(name string, attr []*Attribute) Tags {
 
-	var p map[string]any
-	if len(params) > 0 {
-		p = params[0]
-	}
 	var tags = Tags{}
-	t.Find(name, p, func(t Tag) {
+	t.Find(name, attr, func(t Tag) {
 		tags = append(tags, t)
 	})
 
@@ -62,7 +72,8 @@ func (t Tag) FindAll(name string, params ...map[string]any) Tags {
 
 func (t Tag) FindFirst(name string, params ...map[string]any) Tag {
 	t.limit = 1
-	return t.FindAll(name, params...).First()
+	// return t.FindAll(name, params...).First()
+	return Tag{}
 }
 
 // Select Functionality for css selectors

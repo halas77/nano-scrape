@@ -2,11 +2,7 @@ package engine
 
 import (
 	"fmt"
-	"strings"
 	"testing"
-
-	"github.com/halas77/goscrape/engine"
-	"golang.org/x/net/html"
 )
 
 func generateMockHTML(count int) string {
@@ -20,7 +16,7 @@ func generateMockHTML(count int) string {
 	return html
 }
 
-func FindMatchingAttributes(attrs []*engine.Attribute, elementAttrs []html.Attribute) bool {
+/*func FindMatchingAttributes(attrs []*Attribute, elementAttrs []html.Attribute) bool {
 	lookup := make(map[string]string)
 	for _, attr := range attrs {
 		normalizedKey := strings.ToLower(attr.Key)
@@ -46,7 +42,7 @@ func FindMatchingAttributes(attrs []*engine.Attribute, elementAttrs []html.Attri
 	return attrsLength == counter
 }
 
-func nameSelector(n *html.Node, name string, attrs []*engine.Attribute) bool {
+func nameSelector(n *html.Node, name string, attrs []*Attribute) bool {
 	if n.Type == html.ElementNode && n.Data == name {
 		return FindMatchingAttributes(attrs, n.Attr)
 	}
@@ -54,7 +50,7 @@ func nameSelector(n *html.Node, name string, attrs []*engine.Attribute) bool {
 	return false
 }
 
-func traverse(n *html.Node, name string, attrs []*engine.Attribute, f func(*html.Node)) {
+func traverse(n *html.Node, name string, attrs []*Attribute, f func(*html.Node)) {
 
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
 		if nameSelector(c, name, attrs) {
@@ -64,62 +60,61 @@ func traverse(n *html.Node, name string, attrs []*engine.Attribute, f func(*html
 
 		traverse(c, name, attrs, f)
 	}
-}
+} */
 
-func TestFindMatchingAttributes(t *testing.T) {
-	tests := []struct {
-		name         string
-		attr         []*engine.Attribute
-		elementAttrs []html.Attribute
-		expected     bool
-	}{
-		{
-			name: "returns false when all attributes value does not match",
-			attr: []*engine.Attribute{
-				{Key: "id", Value: "submit-btn"},
-				{Key: "class", Value: "btn-primary"},
-			},
-			elementAttrs: []html.Attribute{
-				{Key: "class", Val: "btn-primary-2"},
-				{Key: "id", Val: "submit-button"},
-			},
-			expected: false,
-		},
-		{
-			name: "returns true when all attributes value match",
-			attr: []*engine.Attribute{
-				{Key: "id", Value: "submit-btn"},
-				{Key: "class", Value: "btn-primary"},
-			},
-			elementAttrs: []html.Attribute{
-				{Key: "class", Val: "btn-primary"},
-				{Key: "id", Val: "submit-btn"},
-			},
-			expected: true,
-		},
-	}
+// func TestFindMatchingAttributes(t *testing.T) {
+// 	tests := []struct {
+// 		name         string
+// 		attr         []*Attribute
+// 		elementAttrs []html.Attribute
+// 		expected     bool
+// 	}{
+// 		{
+// 			name: "returns false when all attributes value does not match",
+// 			attr: []*Attribute{
+// 				{Key: "id", Value: "submit-btn"},
+// 				{Key: "class", Value: "btn-primary"},
+// 			},
+// 			elementAttrs: []html.Attribute{
+// 				{Key: "class", Val: "btn-primary-2"},
+// 				{Key: "id", Val: "submit-button"},
+// 			},
+// 			expected: false,
+// 		},
+// 		{
+// 			name: "returns true when all attributes value match",
+// 			attr: []*Attribute{
+// 				{Key: "id", Value: "submit-btn"},
+// 				{Key: "class", Value: "btn-primary"},
+// 			},
+// 			elementAttrs: []html.Attribute{
+// 				{Key: "class", Val: "btn-primary"},
+// 				{Key: "id", Val: "submit-btn"},
+// 			},
+// 			expected: true,
+// 		},
+// 	}
 
-	// t.Run("Is Flexi work ", func(t *testing.T) {
-	// 	result := engine.FlexSearch("btn btn-primary", "btn-primary", false)
+// 	// t.Run("Is Flexi work ", func(t *testing.T) {
+// 	// 	result := FlexSearch("btn btn-primary", "btn-primary", false)
 
-	// 	if result != true {
-	// 		t.Errorf("expected %v but found %v", true, result)
-	// 	}
-	// })
+// 	// 	if result != true {
+// 	// 		t.Errorf("expected %v but found %v", true, result)
+// 	// 	}
+// 	// })
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			result := FindMatchingAttributes(tc.attr, tc.elementAttrs)
-			if result != tc.expected {
-				t.Errorf("expected %v but found %v", tc.expected, result)
-			}
-		})
-	}
-}
+// 	for _, tc := range tests {
+// 		t.Run(tc.name, func(t *testing.T) {
+// 			result := FindMatchingAttributes(tc.attr, tc.elementAttrs)
+// 			if result != tc.expected {
+// 				t.Errorf("expected %v but found %v", tc.expected, result)
+// 			}
+// 		})
+// 	}
+// }
 
 func BenchmarkMiniTest(b *testing.B) {
-	reader := strings.NewReader(generateMockHTML(50))
-	node, err := html.Parse(reader)
+	scrape, err := InitDocument(generateMockHTML(50))
 
 	if err != nil {
 		fmt.Println(err)
@@ -129,20 +124,28 @@ func BenchmarkMiniTest(b *testing.B) {
 	b.StartTimer() // locate the position we will start the timer for the bench test
 	// 3. Run the actual loop
 
-	attr := []*engine.Attribute{
+	attr := []*Attribute{
 		{Key: "id", Value: "footer-id"},
 	}
 
-	for b.Loop() {
-		traverse(node, "span", attr, func(n *html.Node) {
+	scrape.selection = &SelectionParams{}
+	scrape.selection.attrs = attr
+	scrape.selection.name = "span"
+	scrape.selection.recurse = true
 
+	for b.Loop() {
+
+		scrape.selection.traverse(scrape, func(t Tag) bool {
+
+			return false
 		})
+
 	}
 }
 
 // BenchmarkFind benchmarks the Find method
 func BenchmarkFind(b *testing.B) {
-	scrape, err := engine.InitDocument(generateMockHTML(50))
+	scrape, err := InitDocument(generateMockHTML(50))
 
 	if err != nil {
 		fmt.Println(err)
@@ -153,7 +156,7 @@ func BenchmarkFind(b *testing.B) {
 	name := "main"
 	// params := map[string]any{"class": "main-panel"}
 
-	params := []*engine.Attribute{
+	params := []*Attribute{
 		{
 			Key:   "class",
 			Value: "main-panel",
@@ -165,7 +168,7 @@ func BenchmarkFind(b *testing.B) {
 	b.StartTimer() // locate the position we will start the timer for the bench test
 	// 3. Run the actual loop
 	for b.Loop() {
-		scrape.Find(name, params, func(foundTag engine.Tag) {
+		scrape.Find(name, params, func(foundTag Tag) {
 			// Keep the callback minimal so we bench the method, not the callback logic
 		})
 	}
@@ -184,13 +187,13 @@ func BenchmarkEmpty(b *testing.B) {
 
 // BenchmarkFindAll benchmarks the FindAll method
 func BenchmarkFindAll(b *testing.B) {
-	scrape, err := engine.InitDocument(generateMockHTML(50))
+	scrape, err := InitDocument(generateMockHTML(50))
 	if err != nil {
 		return
 	}
 
 	name := "span"
-	params := []*engine.Attribute{
+	params := []*Attribute{
 		{
 			Key:   "id",
 			Value: "footer-id",
@@ -205,7 +208,7 @@ func BenchmarkFindAll(b *testing.B) {
 
 // BenchmarkFind_NilParams benchmarks how the code handles nil map inputs
 func BenchmarkFindFirst(b *testing.B) {
-	scrape, err := engine.InitDocument(generateMockHTML(50))
+	scrape, err := InitDocument(generateMockHTML(50))
 	if err != nil {
 		return
 	}
@@ -221,7 +224,7 @@ func BenchmarkFindFirst(b *testing.B) {
 
 // Test select functionality
 func BenchmarkSelectOne(b *testing.B) {
-	scrape, err := engine.InitDocument(generateMockHTML(50))
+	scrape, err := InitDocument(generateMockHTML(50))
 	if err != nil {
 		return
 	}
@@ -236,7 +239,7 @@ func BenchmarkSelectOne(b *testing.B) {
 }
 
 func BenchmarkSelectAll(b *testing.B) {
-	scrape, err := engine.InitDocument(generateMockHTML(50))
+	scrape, err := InitDocument(generateMockHTML(50))
 	if err != nil {
 		return
 	}

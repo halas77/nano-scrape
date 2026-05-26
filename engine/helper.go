@@ -16,7 +16,7 @@ type Attribute struct {
 }
 
 func initTag(node *html.Node) Tag {
-	return Tag{root: node, Name: node.Data, Attrs: node.Attr}
+	return Tag{root: node, Name: node.Data, Attrs: node.Attr, selection: &SelectionParams{}}
 }
 
 func InitDocument(input any) (Tag, error) {

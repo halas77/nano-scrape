@@ -38,7 +38,14 @@ func requestTest() {
 	// scrape.Find("span", map[string]any{"class": "item-count"}, func(t engine.Tag) {
 	// 	fmt.Println(t.Print(), ", ")
 	// })
-	main := scrape.SelectOne(".details")
+	params := []*engine.Attribute{
+		{
+			Key:   "class",
+			Value: "details",
+		},
+	}
+
+	main := scrape.FindAll("div", params)
 	fmt.Println(main.Print())
 
 }
