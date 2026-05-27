@@ -31,7 +31,7 @@ func (ts Tags) First() Tag {
 	return ts[0]
 }
 
-func (t *Tag) Query(selector string, f func(Tag)) {
+func (t *Tag) Query(selector string, f func(*Tag)) {
 	sel, err := cascadia.Parse(selector)
 	if err != nil {
 		return
@@ -42,7 +42,7 @@ func (t *Tag) Query(selector string, f func(Tag)) {
 	t.traverse(t.root, func(n *html.Node) bool {
 		hasMatch := sel.Match(n)
 		if hasMatch {
-			f(Tag{root: n, Name: n.Data, Attrs: n.Attr})
+			f(&Tag{root: n, Name: n.Data, Attrs: n.Attr})
 		}
 
 		return hasMatch
@@ -64,11 +64,11 @@ func (t *Tag) Find(name string, attrs []*Attribute, cb TagCallback) {
 	})
 }
 
-func (t *Tag) FindAll(name string, attr []*Attribute) Tags {
+func (t *Tag) FindAll(name string, attr []*Attribute) *Tags {
 
-	var tags = Tags{}
+	var tags = &Tags{}
 	t.Find(name, attr, func(t Tag) {
-		tags = append(tags, t)
+		*tags = append(*tags, t)
 	})
 
 	return tags

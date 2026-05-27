@@ -116,7 +116,7 @@ func BenchmarkFindAll(b *testing.B) {
 			Value: "category-item",
 		},
 	}
-
+	b.StartTimer()
 	for b.Loop() {
 		_ = scrape.FindAll(name, params)
 	}

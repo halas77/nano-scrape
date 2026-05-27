@@ -53,7 +53,7 @@ func requestTest() {
 	// 	fmt.Println(t.Print())
 	// })
 
-	scrape.Query(".price-tag", func(t engine.Tag) {
+	scrape.Query(".price-tag", func(t *engine.Tag) {
 		fmt.Println(t.Print())
 	})
 
