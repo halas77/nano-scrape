@@ -12,7 +12,8 @@ func main() {
 }
 
 func requestTest() {
-	scrape, err := engine.LoadDocument("http://127.0.0.1:5500/examples/basic/index.html")
+	// scrape, err := engine.LoadDocument("http://127.0.0.1:5500/examples/basic/index.html")
+	scrape, err := engine.LoadDocument("https://1337x.to")
 
 	if err != nil {
 		fmt.Println("Error parsing HTML:", err)
