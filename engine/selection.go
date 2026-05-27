@@ -14,20 +14,20 @@ type SelectionParams struct {
 	recurse bool
 }
 
-func (s SelectionParams) traverse(tag Tag, f TraverseCallback) uint8 {
-	n := tag.root
-	var limit uint8 = s.limit
-	recurse := s.recurse
+func (t *Tag) traverse(n *html.Node, f func(*html.Node) bool) uint8 {
 
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		t := initTag(c)
-		exit := f(t)
-		if s.limit == 1 && exit {
+		// t.nameSelector(c)
+		// // f(c)
+		// t.traverse(c, f)
+
+		exit := f(c)
+		if t.limit == 1 && exit {
 			return 0
 		}
 
-		if recurse {
-			status := traverse(t, limit, recurse, f)
+		if t.recurse {
+			status := t.traverse(c, f)
 			if status == 0 {
 				return 0
 			}
@@ -37,9 +37,9 @@ func (s SelectionParams) traverse(tag Tag, f TraverseCallback) uint8 {
 	return 1
 }
 
-func (s SelectionParams) FindMatchingAttributes(elementAttrs []html.Attribute) bool {
+func (t Tag) FindMatchingAttributes(elementAttrs []html.Attribute) bool {
 	lookup := make(map[string]string)
-	attrs := s.attrs
+	attrs := t.attrs
 
 	for _, attr := range attrs {
 		normalizedKey := strings.ToLower(attr.Key)
@@ -65,12 +65,10 @@ func (s SelectionParams) FindMatchingAttributes(elementAttrs []html.Attribute) b
 	return attrsLength == counter
 }
 
-func (s SelectionParams) nameSelector(tag Tag) bool {
-	n := tag.root
-	if n.Type == html.ElementNode && n.Data == s.name {
-		return s.FindMatchingAttributes(n.Attr)
+func (t Tag) nameSelector(n *html.Node) bool {
+	if n.Type == html.ElementNode && n.Data == t.name {
+		return t.FindMatchingAttributes(n.Attr)
 	}
-
 	return false
 }
 

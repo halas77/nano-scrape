@@ -21,6 +21,7 @@ func requestTest() {
 		</div>
 
 		<div class="details">
+			<div class="price-tag"> ETB 909.99 </div>
 			<span class="brand">Apple</span>
 			<span class="model">MacBook Air</span>
 		</div>
@@ -38,15 +39,23 @@ func requestTest() {
 	// scrape.Find("span", map[string]any{"class": "item-count"}, func(t engine.Tag) {
 	// 	fmt.Println(t.Print(), ", ")
 	// })
-	params := []*engine.Attribute{
-		{
-			Key:   "class",
-			Value: "details",
-		},
-	}
+	// params := []*engine.Attribute{
+	// 	{
+	// 		Key:   "class",
+	// 		Value: "details",
+	// 	},
+	// }
 
-	main := scrape.FindAll("div", params)
-	fmt.Println(main.Print())
+	// main := scrape.FindAll("div", params)
+	// fmt.Println(main.Print())
+
+	// scrape.Find("div", params, func(t engine.Tag) {
+	// 	fmt.Println(t.Print())
+	// })
+
+	scrape.Query(".price-tag", func(t engine.Tag) {
+		fmt.Println(t.Print())
+	})
 
 }
 

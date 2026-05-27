@@ -3,6 +3,9 @@ package engine
 import (
 	"fmt"
 	"testing"
+
+	"github.com/andybalholm/cascadia"
+	"golang.org/x/net/html"
 )
 
 func generateMockHTML(count int) string {
@@ -16,130 +19,37 @@ func generateMockHTML(count int) string {
 	return html
 }
 
-/*func FindMatchingAttributes(attrs []*Attribute, elementAttrs []html.Attribute) bool {
-	lookup := make(map[string]string)
-	for _, attr := range attrs {
-		normalizedKey := strings.ToLower(attr.Key)
-		lookup[normalizedKey] = attr.Value
+func BenchmarkCascadiaQuery(b *testing.B) {
+	scrape, _ := InitDocument(generateMockHTML(50))
+	sel, _ := cascadia.Parse(".category-item")
+
+	b.StartTimer()
+
+	for b.Loop() {
+		cascadia.QueryAll(scrape.root, sel)
 	}
-
-	var attrsLength uint8 = uint8(len(attrs))
-	var counter uint8 = 0
-
-	for _, attr := range elementAttrs {
-		normalizedKey := strings.ToLower(attr.Key)
-		if valA, found := lookup[normalizedKey]; found {
-			if normalizedKey == "string" {
-				// use flex for equality and increment counter if it is true true and continue
-			}
-
-			if valA == attr.Val {
-				counter++
-			}
-		}
-	}
-
-	return attrsLength == counter
 }
 
-func nameSelector(n *html.Node, name string, attrs []*Attribute) bool {
-	if n.Type == html.ElementNode && n.Data == name {
-		return FindMatchingAttributes(attrs, n.Attr)
-	}
-
-	return false
-}
-
-func traverse(n *html.Node, name string, attrs []*Attribute, f func(*html.Node)) {
-
-	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		if nameSelector(c, name, attrs) {
-			// fmt.Println("Found Match ", c.Data)
-			f(c)
-		}
-
-		traverse(c, name, attrs, f)
-	}
-} */
-
-// func TestFindMatchingAttributes(t *testing.T) {
-// 	tests := []struct {
-// 		name         string
-// 		attr         []*Attribute
-// 		elementAttrs []html.Attribute
-// 		expected     bool
-// 	}{
-// 		{
-// 			name: "returns false when all attributes value does not match",
-// 			attr: []*Attribute{
-// 				{Key: "id", Value: "submit-btn"},
-// 				{Key: "class", Value: "btn-primary"},
-// 			},
-// 			elementAttrs: []html.Attribute{
-// 				{Key: "class", Val: "btn-primary-2"},
-// 				{Key: "id", Val: "submit-button"},
-// 			},
-// 			expected: false,
-// 		},
-// 		{
-// 			name: "returns true when all attributes value match",
-// 			attr: []*Attribute{
-// 				{Key: "id", Value: "submit-btn"},
-// 				{Key: "class", Value: "btn-primary"},
-// 			},
-// 			elementAttrs: []html.Attribute{
-// 				{Key: "class", Val: "btn-primary"},
-// 				{Key: "id", Val: "submit-btn"},
-// 			},
-// 			expected: true,
-// 		},
-// 	}
-
-// 	// t.Run("Is Flexi work ", func(t *testing.T) {
-// 	// 	result := FlexSearch("btn btn-primary", "btn-primary", false)
-
-// 	// 	if result != true {
-// 	// 		t.Errorf("expected %v but found %v", true, result)
-// 	// 	}
-// 	// })
-
-// 	for _, tc := range tests {
-// 		t.Run(tc.name, func(t *testing.T) {
-// 			result := FindMatchingAttributes(tc.attr, tc.elementAttrs)
-// 			if result != tc.expected {
-// 				t.Errorf("expected %v but found %v", tc.expected, result)
-// 			}
-// 		})
-// 	}
-// }
-
-func BenchmarkMiniTest(b *testing.B) {
+func BenchmarkTraverseTest(b *testing.B) {
 	scrape, err := InitDocument(generateMockHTML(50))
 
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-
-	b.StartTimer() // locate the position we will start the timer for the bench test
-	// 3. Run the actual loop
-
 	attr := []*Attribute{
 		{Key: "id", Value: "footer-id"},
 	}
 
-	scrape.selection = &SelectionParams{}
-	scrape.selection.attrs = attr
-	scrape.selection.name = "span"
-	scrape.selection.recurse = true
+	scrape.recurse = true
+	scrape.attrs = attr
+
+	b.StartTimer()
 
 	for b.Loop() {
-
-		scrape.selection.traverse(scrape, func(t Tag) bool {
-
+		scrape.traverse(scrape.root, func(t *html.Node) bool {
 			return false
 		})
-
 	}
 }
 
@@ -153,13 +63,16 @@ func BenchmarkFind(b *testing.B) {
 	}
 
 	// 1. Setup the data needed for the test
-	name := "main"
-	// params := map[string]any{"class": "main-panel"}
+	name := "div"
 
 	params := []*Attribute{
+		// {
+		// 	Key:   "id",
+		// 	Value: "footer-id",
+		// },
 		{
 			Key:   "class",
-			Value: "main-panel",
+			Value: "category-item",
 		},
 	}
 
@@ -192,14 +105,17 @@ func BenchmarkFindAll(b *testing.B) {
 		return
 	}
 
-	name := "span"
+	name := "div"
 	params := []*Attribute{
+		// {
+		// 	Key:   "id",
+		// 	Value: "footer-id",
+		// },
 		{
-			Key:   "id",
-			Value: "footer-id",
+			Key:   "class",
+			Value: "category-item",
 		},
 	}
-	// params := map[string]any{"id": "footer-id"}
 
 	for b.Loop() {
 		_ = scrape.FindAll(name, params)
@@ -244,7 +160,7 @@ func BenchmarkSelectAll(b *testing.B) {
 		return
 	}
 
-	selector := "#footer-id"
+	selector := ".category-item"
 	// params := map[string]any{"id": "footer-id"}
 
 	b.StartTimer()

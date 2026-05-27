@@ -58,7 +58,6 @@ func traverse(n *html.Node, name string, attrs []*engine.Attribute, f func(*html
 
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
 		if nameSelector(c, name, attrs) {
-			// fmt.Println("Found Match ", c.Data)
 			f(c)
 		}
 
@@ -150,9 +149,7 @@ func BenchmarkFind(b *testing.B) {
 	}
 
 	// 1. Setup the data needed for the test
-	name := "main"
-	// params := map[string]any{"class": "main-panel"}
-
+	name := "div"
 	params := []*engine.Attribute{
 		{
 			Key:   "class",

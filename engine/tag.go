@@ -8,9 +8,11 @@ import (
 )
 
 type Tag struct {
-	root      *html.Node
-	limit     uint8
-	selection *SelectionParams
+	root    *html.Node
+	limit   uint8
+	attrs   []*Attribute
+	recurse bool
+	name    string
 
 	Name  string
 	Attrs []html.Attribute
@@ -29,38 +31,40 @@ func (ts Tags) First() Tag {
 	return ts[0]
 }
 
-func (t Tag) Find(name string, attr []*Attribute, cb TagCallback) {
-
-	if t.selection == nil {
-		t.selection = &SelectionParams{}
+func (t *Tag) Query(selector string, f func(Tag)) {
+	sel, err := cascadia.Parse(selector)
+	if err != nil {
+		return
 	}
 
-	if attr != nil {
-		// attrs := make([]*Attribute, 0, len(attr))
-		// for i := range attr {
-		// 	a := attr[i]
-		// 	attrs = append(attrs, &a)
-		// }
+	t.recurse = true
 
-		t.selection.attrs = attr
-	}
+	t.traverse(t.root, func(n *html.Node) bool {
+		hasMatch := sel.Match(n)
+		if hasMatch {
+			f(Tag{root: n, Name: n.Data, Attrs: n.Attr})
+		}
 
-	t.selection.name = name
-	t.selection.limit = t.limit
-	selection := t.selection
-	selection.recurse = true
+		return hasMatch
+	})
+}
 
-	selection.traverse(t, func(t Tag) bool {
-		// fmt.Println("tag ", t.Name)
-		isMatch := selection.nameSelector(t)
+func (t *Tag) Find(name string, attrs []*Attribute, cb TagCallback) {
+
+	t.recurse = true
+	t.name = name
+	t.attrs = attrs
+
+	t.traverse(t.root, func(node *html.Node) bool {
+		isMatch := t.nameSelector(node)
 		if isMatch {
-			cb(t)
+			cb(Tag{root: node, Name: node.Data, Attrs: node.Attr})
 		}
 		return isMatch
 	})
 }
 
-func (t Tag) FindAll(name string, attr []*Attribute) Tags {
+func (t *Tag) FindAll(name string, attr []*Attribute) Tags {
 
 	var tags = Tags{}
 	t.Find(name, attr, func(t Tag) {
