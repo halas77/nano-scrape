@@ -162,7 +162,7 @@ func BenchmarkFind(b *testing.B) {
 	b.StartTimer() // locate the position we will start the timer for the bench test
 	// 3. Run the actual loop
 	for b.Loop() {
-		scrape.Find(name, params, func(foundTag engine.Tag) {
+		scrape.Find(name, params, func(foundTag *engine.Tag) {
 			// Keep the callback minimal so we bench the method, not the callback logic
 		})
 	}

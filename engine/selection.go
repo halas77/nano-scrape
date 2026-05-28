@@ -18,9 +18,6 @@ func (t *Tag) traverse(n *html.Node, f func(*html.Node) bool) uint8 {
 
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
 		// t.nameSelector(c)
-		// // f(c)
-		// t.traverse(c, f)
-
 		exit := f(c)
 		if t.limit == 1 && exit {
 			return 0
@@ -37,7 +34,7 @@ func (t *Tag) traverse(n *html.Node, f func(*html.Node) bool) uint8 {
 	return 1
 }
 
-func (t Tag) FindMatchingAttributes(elementAttrs []html.Attribute) bool {
+func (t *Tag) FindMatchingAttributes(elementAttrs []html.Attribute) bool {
 	lookup := make(map[string]string)
 	attrs := t.attrs
 
@@ -65,7 +62,7 @@ func (t Tag) FindMatchingAttributes(elementAttrs []html.Attribute) bool {
 	return attrsLength == counter
 }
 
-func (t Tag) nameSelector(n *html.Node) bool {
+func (t *Tag) nameSelector(n *html.Node) bool {
 	if n.Type == html.ElementNode && n.Data == t.name {
 		return t.FindMatchingAttributes(n.Attr)
 	}

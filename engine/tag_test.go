@@ -38,7 +38,7 @@ func BenchmarkTraverseTest(b *testing.B) {
 		return
 	}
 	attr := []*Attribute{
-		{Key: "id", Value: "footer-id"},
+		{Key: "class", Value: "category-item"},
 	}
 
 	scrape.recurse = true
@@ -81,20 +81,9 @@ func BenchmarkFind(b *testing.B) {
 	b.StartTimer() // locate the position we will start the timer for the bench test
 	// 3. Run the actual loop
 	for b.Loop() {
-		scrape.Find(name, params, func(foundTag Tag) {
+		scrape.Find(name, params, func(foundTag *Tag) {
 			// Keep the callback minimal so we bench the method, not the callback logic
 		})
-	}
-}
-
-func BenchmarkEmpty(b *testing.B) {
-
-	b.StartTimer() // locate the position we will start the timer for the bench test
-	// 3. Run the actual loop
-	for b.Loop() {
-		for range 1 {
-			// fmt.Println("i:", i)
-		}
 	}
 }
 
@@ -122,7 +111,22 @@ func BenchmarkFindAll(b *testing.B) {
 	}
 }
 
-// BenchmarkFind_NilParams benchmarks how the code handles nil map inputs
+func BenchmarkSelectAll(b *testing.B) {
+	scrape, err := InitDocument(generateMockHTML(50))
+	if err != nil {
+		return
+	}
+
+	selector := ".category-item"
+	// params := map[string]any{"id": "footer-id"}
+
+	b.StartTimer()
+	for b.Loop() {
+		scrape.Select(selector)
+		// scrape.QueryAll(selector)
+	}
+}
+
 func BenchmarkFindFirst(b *testing.B) {
 	scrape, err := InitDocument(generateMockHTML(50))
 	if err != nil {
@@ -151,20 +155,5 @@ func BenchmarkSelectOne(b *testing.B) {
 	b.StartTimer()
 	for b.Loop() {
 		scrape.SelectOne(selector)
-	}
-}
-
-func BenchmarkSelectAll(b *testing.B) {
-	scrape, err := InitDocument(generateMockHTML(50))
-	if err != nil {
-		return
-	}
-
-	selector := ".category-item"
-	// params := map[string]any{"id": "footer-id"}
-
-	b.StartTimer()
-	for b.Loop() {
-		scrape.Select(selector)
 	}
 }
