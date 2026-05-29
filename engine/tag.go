@@ -74,9 +74,6 @@ func (t *Tag) Find(name string, attrs []*Attribute, cb TagCallback) {
 			cb(&Tag{root: node, Name: node.Data, Attrs: node.Attr})
 		}
 		return isMatch
-
-		// t.nameSelector(node)
-		// return true
 	})
 }
 
@@ -134,8 +131,8 @@ func (t Tag) SelectOne(selector string, params ...map[string]any) Tag {
 	return t.Select(selector, params...).First()
 }
 
-func (t Tag) Text() string {
-	return strings.TrimSpace(getNodeStrings(t))
+func (t *Tag) Text() string {
+	return strings.TrimSpace(t.getNodeStrings(t.root))
 }
 
 func (ts Tags) Select(selector string, params ...map[string]any) *Tags {

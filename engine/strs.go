@@ -8,6 +8,19 @@ import (
 	"golang.org/x/net/html"
 )
 
+func (t *Tag) getNodeStrings(n *html.Node) string {
+	nodeStrings := []string{}
+
+	t.traverse(n, func(c *html.Node) bool {
+		if c.Type == html.TextNode {
+			nodeStrings = append(nodeStrings, c.Data)
+		}
+		return false
+	})
+
+	return strings.Join(nodeStrings, "")
+}
+
 func getNodeStrings(t Tag) string {
 	nodeStrings := []string{}
 

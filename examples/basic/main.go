@@ -116,7 +116,7 @@ func stringTest() {
 
 	fmt.Println("\n=== 4. Chained CSS Search ===")
 	brands := root.Select("article[data-category='electronics']").Select(".brand")
-	for _, b := range brands {
+	for _, b := range *brands {
 		fmt.Println("Brand in Electronics:", b.Print())
 	}
 }

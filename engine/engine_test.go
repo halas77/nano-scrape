@@ -1,6 +1,8 @@
 package engine
 
 import (
+	"fmt"
+	"strings"
 	"testing"
 
 	"golang.org/x/net/html"
@@ -177,6 +179,7 @@ func TestFindMatchingAttributes(t *testing.T) {
 			attr: []*Attribute{
 				{Key: "id", Value: "submit-btn"},
 				{Key: "class", Value: "btn-primary"},
+				{Key: "string", Value: "World"},
 			},
 			elementAttrs: []html.Attribute{
 				{Key: "class", Val: "btn-primary"},
@@ -186,10 +189,21 @@ func TestFindMatchingAttributes(t *testing.T) {
 		},
 	}
 
+	input := `<div class="details">	Hello <span> Abebe Kebede </span> World </div>`
+
+	reader := strings.NewReader(input)
+	node, err := html.Parse(reader)
+
+	if err != nil {
+		fmt.Println("err ", err)
+	}
+
+	n := node.FirstChild.FirstChild.NextSibling.FirstChild
+
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			tag := Tag{attrs: tc.attr}
-			result := tag.FindMatchingAttributes(tc.elementAttrs)
+			result := tag.FindMatchingAttributes(tc.elementAttrs, n)
 			if result != tc.expected {
 				t.Errorf("expected %v but found %v", tc.expected, result)
 			}

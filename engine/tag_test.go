@@ -33,7 +33,7 @@ func BenchmarkMatchingAttribute(b *testing.B) {
 
 	b.StartTimer()
 	for b.Loop() {
-		scrape.FindMatchingAttributes(attrs)
+		scrape.FindMatchingAttributes(attrs, nil)
 	}
 }
 
@@ -66,7 +66,7 @@ func BenchmarkTraverseTest(b *testing.B) {
 
 	for b.Loop() {
 		scrape.traverse(scrape.root, func(t *html.Node) bool {
-			if scrape.FindMatchingAttributes(t.Attr) {
+			if scrape.FindMatchingAttributes(t.Attr, nil) {
 				// fmt.Println("attr ", t.Attr)
 			}
 			return false
