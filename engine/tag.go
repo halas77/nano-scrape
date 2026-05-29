@@ -13,6 +13,7 @@ type Tag struct {
 	attrs   []*Attribute
 	recurse bool
 	name    string
+	maps    *map[string]string
 
 	Name  string
 	Attrs []html.Attribute
@@ -68,14 +69,14 @@ func (t *Tag) Find(name string, attrs []*Attribute, cb TagCallback) {
 	t.attrs = attrs
 
 	t.traverse(t.root, func(node *html.Node) bool {
-		// isMatch := t.nameSelector(node)
-		// if isMatch {
-		// 	cb(&Tag{root: node, Name: node.Data, Attrs: node.Attr})
-		// }
-		// return isMatch
+		isMatch := t.nameSelector(node)
+		if isMatch {
+			cb(&Tag{root: node, Name: node.Data, Attrs: node.Attr})
+		}
+		return isMatch
 
-		t.nameSelector(node)
-		return true
+		// t.nameSelector(node)
+		// return true
 	})
 }
 

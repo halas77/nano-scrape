@@ -152,3 +152,47 @@ func TestFlexMatch(t *testing.T) {
 		})
 	}
 }
+
+func TestFindMatchingAttributes(t *testing.T) {
+	tests := []struct {
+		name         string
+		attr         []*Attribute
+		elementAttrs []html.Attribute
+		expected     bool
+	}{
+		{
+			name: "returns false when all attributes value does not match",
+			attr: []*Attribute{
+				{Key: "id", Value: "submit-btn"},
+				{Key: "class", Value: "btn-primary"},
+			},
+			elementAttrs: []html.Attribute{
+				{Key: "class", Val: "btn-primary-2"},
+				{Key: "id", Val: "submit-button"},
+			},
+			expected: false,
+		},
+		{
+			name: "returns true when all attributes value match",
+			attr: []*Attribute{
+				{Key: "id", Value: "submit-btn"},
+				{Key: "class", Value: "btn-primary"},
+			},
+			elementAttrs: []html.Attribute{
+				{Key: "class", Val: "btn-primary"},
+				{Key: "id", Val: "submit-btn"},
+			},
+			expected: true,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			tag := Tag{attrs: tc.attr}
+			result := tag.FindMatchingAttributes(tc.elementAttrs)
+			if result != tc.expected {
+				t.Errorf("expected %v but found %v", tc.expected, result)
+			}
+		})
+	}
+}

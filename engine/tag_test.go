@@ -19,6 +19,24 @@ func generateMockHTML(count int) string {
 	return html
 }
 
+func BenchmarkMatchingAttribute(b *testing.B) {
+	scrape, _ := InitDocument(generateMockHTML(50))
+	attrs := []html.Attribute{
+		{Key: "class", Val: "category-item"},
+	}
+
+	attr := []*Attribute{
+		{Key: "class", Value: "category-item"},
+	}
+
+	scrape.attrs = attr
+
+	b.StartTimer()
+	for b.Loop() {
+		scrape.FindMatchingAttributes(attrs)
+	}
+}
+
 func BenchmarkCascadiaQuery(b *testing.B) {
 	scrape, _ := InitDocument(generateMockHTML(50))
 	sel, _ := cascadia.Parse(".category-item")
@@ -48,6 +66,9 @@ func BenchmarkTraverseTest(b *testing.B) {
 
 	for b.Loop() {
 		scrape.traverse(scrape.root, func(t *html.Node) bool {
+			if scrape.FindMatchingAttributes(t.Attr) {
+				// fmt.Println("attr ", t.Attr)
+			}
 			return false
 		})
 	}
@@ -122,8 +143,8 @@ func BenchmarkSelectAll(b *testing.B) {
 
 	b.StartTimer()
 	for b.Loop() {
-		scrape.Select(selector)
-		// scrape.QueryAll(selector)
+		// scrape.Select(selector)
+		scrape.QueryAll(selector)
 	}
 }
 

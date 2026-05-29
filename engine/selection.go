@@ -1,8 +1,6 @@
 package engine
 
 import (
-	"strings"
-
 	"golang.org/x/net/html"
 )
 
@@ -35,20 +33,27 @@ func (t *Tag) traverse(n *html.Node, f func(*html.Node) bool) uint8 {
 }
 
 func (t *Tag) FindMatchingAttributes(elementAttrs []html.Attribute) bool {
-	lookup := make(map[string]string)
 	attrs := t.attrs
 
-	for _, attr := range attrs {
-		normalizedKey := strings.ToLower(attr.Key)
-		lookup[normalizedKey] = attr.Value
+	if t.maps == nil {
+		lookup := make(map[string]string)
+
+		for _, attr := range attrs {
+			// normalizedKey := strings.ToLower(attr.Key)
+			normalizedKey := attr.Key
+			lookup[normalizedKey] = attr.Value
+		}
+
+		t.maps = &lookup
 	}
 
 	var attrsLength uint8 = uint8(len(attrs))
 	var counter uint8 = 0
 
 	for _, attr := range elementAttrs {
-		normalizedKey := strings.ToLower(attr.Key)
-		if valA, found := lookup[normalizedKey]; found {
+		// normalizedKey := strings.ToLower(attr.Key)
+		normalizedKey := attr.Key
+		if valA, found := (*t.maps)[normalizedKey]; found {
 			if normalizedKey == "string" {
 				// use flex for equality and increment counter if it is true true and continue
 			}
