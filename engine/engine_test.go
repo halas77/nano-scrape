@@ -209,4 +209,29 @@ func TestFindMatchingAttributes(t *testing.T) {
 			}
 		})
 	}
+
+	// 6. Test direct Tags ToMD
+	tagsMD, err := items.ToMD()
+	if err != nil {
+		t.Errorf("items.ToMD failed: %v", err)
+	}
+	if !strings.Contains(tagsMD, "| name | text | class | id | attributes |") {
+		t.Errorf("Tags ToMD header is incorrect: %s", tagsMD)
+	}
+	// Row 1 should contain specific fields but we're flexible with exact whitespace in text
+	if !strings.Contains(tagsMD, "| div |") || !strings.Contains(tagsMD, "Go Programming") || !strings.Contains(tagsMD, "$39.99") || !strings.Contains(tagsMD, "| item |") || !strings.Contains(tagsMD, "data-category=books") {
+		t.Errorf("Tags ToMD row 1 is incorrect: %s", tagsMD)
+	}
+
+	// 7. Test ExportMD
+	mappedMD, err := ExportMD(mappedData)
+	if err != nil {
+		t.Errorf("ExportMD failed: %v", err)
+	}
+	if !strings.Contains(mappedMD, "| category | price | title |") {
+		t.Errorf("ExportMD header is incorrect: %s", mappedMD)
+	}
+	if !strings.Contains(mappedMD, "| books | $39.99 | Go Programming |") {
+		t.Errorf("ExportMD row 1 is incorrect: %s", mappedMD)
+	}
 }
