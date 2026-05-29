@@ -139,7 +139,15 @@ func exportDemo() {
 	}
 	fmt.Println("Structured Mapped CSV:\n", csvStr)
 
-	// 3. Write them directly to files
+	// 3. Export structured data to Markdown
+	mdStr, err := engine.ExportMD(mappedData)
+	if err != nil {
+		fmt.Println("Error exporting MD:", err)
+		return
+	}
+	fmt.Println("Structured Mapped Markdown Table:\n", mdStr)
+
+	// 4. Write them directly to files
 	err = engine.WriteMappedJSON("scraped_products.json", mappedData)
 	if err != nil {
 		fmt.Println("Error writing JSON file:", err)
@@ -154,7 +162,14 @@ func exportDemo() {
 		fmt.Println("Successfully wrote structured data to: scraped_products.csv")
 	}
 
-	fmt.Println("\n=== 6. Direct Tags Collection Export (JSON/CSV) ===")
+	err = engine.WriteMappedMD("scraped_products.md", mappedData)
+	if err != nil {
+		fmt.Println("Error writing MD file:", err)
+	} else {
+		fmt.Println("Successfully wrote structured data to: scraped_products.md")
+	}
+
+	fmt.Println("\n=== 6. Direct Tags Collection Export (JSON/CSV/MD) ===")
 	// Direct Tags to JSON
 	directJSON, err := products.ToJSON()
 	if err == nil {
@@ -165,6 +180,12 @@ func exportDemo() {
 	directCSV, err := products.ToCSV()
 	if err == nil {
 		fmt.Println("Direct Tags CSV:\n", directCSV)
+	}
+
+	// Direct Tags to Markdown
+	directMD, err := products.ToMD()
+	if err == nil {
+		fmt.Println("Direct Tags Markdown:\n", directMD)
 	}
 }
 
