@@ -34,17 +34,19 @@ func requestTest() {
 		fmt.Println("Error parsing HTML:", err)
 		return
 	}
+	params := []*engine.Attribute{
+		{
+			Key:   "class",
+			Value: "details",
+		},
+	}
+
+	fmt.Println(scrape.FindFirst("div", params).Print())
 
 	// main := scrape.FindAll("span", map[string]any{"class": "item-count"})
 	// scrape.Find("span", map[string]any{"class": "item-count"}, func(t engine.Tag) {
 	// 	fmt.Println(t.Print(), ", ")
 	// })
-	// params := []*engine.Attribute{
-	// 	{
-	// 		Key:   "class",
-	// 		Value: "details",
-	// 	},
-	// }
 
 	// main := scrape.FindAll("div", params)
 	// fmt.Println(main.Print())
@@ -53,9 +55,9 @@ func requestTest() {
 	// 	fmt.Println(t.Print())
 	// })
 
-	scrape.Query(".price-tag", func(t *engine.Tag) {
-		fmt.Println(t.Print())
-	})
+	// scrape.Query(".price-tag", func(t *engine.Tag) {
+	// 	fmt.Println(t.Print())
+	// })
 
 }
 

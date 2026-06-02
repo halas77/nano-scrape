@@ -24,12 +24,12 @@ type Tag struct {
 type Tags []*Tag
 type TagCallback func(*Tag)
 
-func (ts Tags) First() Tag {
+func (ts Tags) First() *Tag {
 
 	if len(ts) == 0 {
-		return Tag{}
+		return nil
 	}
-	return *ts[0]
+	return ts[0]
 }
 
 func (t *Tag) Query(selector string, f func(*Tag)) {
@@ -77,9 +77,15 @@ func (t *Tag) Find(name string, attrs []*Attribute, cb TagCallback) {
 	})
 }
 
-func (t *Tag) FindAll(name string, attr []*Attribute) Tags {
+func (t *Tag) FindAll(name string, attribute ...[]*Attribute) Tags {
 
 	var tags = Tags{}
+	var attr []*Attribute
+	if len(attribute) > 0 {
+		attr = attribute[0]
+	}
+
+
 	t.Find(name, attr, func(t *Tag) {
 		tags = append(tags, t)
 	})
@@ -87,10 +93,10 @@ func (t *Tag) FindAll(name string, attr []*Attribute) Tags {
 	return tags
 }
 
-func (t Tag) FindFirst(name string, params ...map[string]any) Tag {
+func (t *Tag) FindFirst(name string, attr ...[]*Attribute) *Tag {
 	t.limit = 1
-	// return t.FindAll(name, params...).First()
-	return Tag{}
+	return t.FindAll(name, attr...).First()
+
 }
 
 // Select Functionality for css selectors
@@ -127,7 +133,7 @@ func (t *Tag) Select(selector string, params ...map[string]any) Tags {
 	return tags
 }
 
-func (t Tag) SelectOne(selector string, params ...map[string]any) Tag {
+func (t *Tag) SelectOne(selector string, params ...map[string]any) *Tag {
 	return t.Select(selector, params...).First()
 }
 
@@ -143,6 +149,6 @@ func (ts Tags) Select(selector string, params ...map[string]any) *Tags {
 	return &results
 }
 
-func (ts Tags) SelectOne(selector string, params ...map[string]any) Tag {
+func (ts Tags) SelectOne(selector string, params ...map[string]any) *Tag {
 	return ts.Select(selector, params...).First()
 }

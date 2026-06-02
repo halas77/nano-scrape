@@ -207,8 +207,17 @@ func BenchmarkFindFirst(b *testing.B) {
 		return
 	}
 
-	name := "span"
-	params := map[string]any{"id": "header-id"}
+	name := "div"
+	params := []*engine.Attribute{
+		// {
+		// 	Key:   "id",
+		// 	Value: "footer-id",
+		// },
+		{
+			Key:   "class",
+			Value: "category-item",
+		},
+	}
 
 	b.StartTimer()
 	for b.Loop() {

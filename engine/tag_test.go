@@ -2,6 +2,7 @@ package engine
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/andybalholm/cascadia"
@@ -17,6 +18,25 @@ func generateMockHTML(count int) string {
 	html += `<span class="spam-category-item" id="footer-id">Footer is hear</span>`
 	html += "</body></html>"
 	return html
+}
+
+func TestFinds(t *testing.T) {
+	scrape, _ := InitDocument(generateMockHTML(50))
+
+	// attr1 := []html.Attribute{
+	// 	{Key: "class", Val: "category-item"},
+	// }
+
+	attr2 := []*Attribute{
+		{Value: "footer-id", Key: "id"},
+	}
+
+	t.Run("Does Find work", func(t *testing.T) {
+		span := scrape.FindFirst("span", attr2)
+		if !strings.Contains(span.Print(), "Footer is hear") {
+			t.Errorf("FindFirst: Expected to fine Footer is hear but not exist on the string.")
+		}
+	})
 }
 
 func BenchmarkMatchingAttribute(b *testing.B) {
@@ -155,7 +175,16 @@ func BenchmarkFindFirst(b *testing.B) {
 	}
 
 	name := "span"
-	params := map[string]any{"id": "header-id"}
+	params := []*Attribute{
+		{
+			Key:   "id",
+			Value: "footer-id",
+		},
+		// {
+		// 	Key:   "class",
+		// 	Value: "category-item",
+		// },
+	}
 
 	b.StartTimer()
 	for b.Loop() {

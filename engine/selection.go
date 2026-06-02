@@ -37,6 +37,10 @@ func (t *Tag) traverse(n *html.Node, f func(*html.Node) bool) uint8 {
 func (t *Tag) FindMatchingAttributes(elementAttrs []html.Attribute, n *html.Node) bool {
 	attrs := t.attrs
 
+	if attrs == nil {
+		return true
+	}
+
 	if t.maps == nil {
 		lookup := make(map[string]string)
 
