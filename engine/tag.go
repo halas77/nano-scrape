@@ -85,7 +85,6 @@ func (t *Tag) FindAll(name string, attribute ...[]*Attribute) Tags {
 		attr = attribute[0]
 	}
 
-
 	t.Find(name, attr, func(t *Tag) {
 		tags = append(tags, t)
 	})
