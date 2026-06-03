@@ -1,17 +1,6 @@
 package engine
 
-import "golang.org/x/net/html"
-
-func PublicSelector(n *html.Node) bool {
-	return nameSelector(initTag(n), nil)
-}
-
-func FlexSearch(main string, target string, caseSensitive bool) bool {
-	return flexMatch(main, target, false)
-}
-
 /*
-
 import (
 	"fmt"
 	"strings"

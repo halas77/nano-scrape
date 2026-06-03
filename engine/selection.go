@@ -149,13 +149,13 @@ func traverse(tag Tag, limit uint8, recurse bool, cb TraverseCallback) uint8 {
 
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
 		t := initTag(c)
-		exit := cb(t)
+		exit := cb(*t)
 		if limit == 1 && exit {
 			return 0
 		}
 
 		if recurse {
-			status := traverse(t, limit, recurse, cb)
+			status := traverse(*t, limit, recurse, cb)
 			if status == 0 {
 				return 0
 			}
