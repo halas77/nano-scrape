@@ -1,71 +1,257 @@
-package tests
+package engine
 
 import (
+	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/halas77/goscrape/engine"
+	"golang.org/x/net/html"
 )
 
-const benchmarkHTML = `
-<!DOCTYPE html>
-<html>
-<head>
-	<title>Benchmark Page</title>
-</head>
-<body>
-	<div class="container">
-		<header>
-			<h1>Welcome to GoScrape Benchmark</h1>
-		</header>
-		<main>
-			<p class="intro">This is a paragraph used to benchmark the performance of the library.</p>
-			<ul class="item-list">
-				<li class="item" id="item-1">First item</li>
-				<li class="item" id="item-2">Second item</li>
-				<li class="item" id="item-3">Third item</li>
-			</ul>
-		</main>
-		<footer>
-			<p>Footer content here.</p>
-		</footer>
-	</div>
-</body>
-</html>
-`
+func generateMockHTML(count int) string {
+	html := "<html><body>"
+	html += `<span class="spam-category-item" id="header-id">Header is hear</span>`
+	for i := range count {
+		html += fmt.Sprintf(`<div class="category-item">Category %d</div>`, i)
+	}
+	html += `<span class="spam-category-item" id="footer-id">Footer is hear</span>`
+	html += "</body></html>"
+	return html
+}
 
-// BenchmarkInitDocument benchmarks how long it takes to parse an HTML document.
-func BenchmarkInitDocument(b *testing.B) {
-	// Enable memory allocation reporting to see how many bytes and allocations are made.
-	b.ReportAllocs()
+func FindMatchingAttributes(attrs []*engine.Attribute, elementAttrs []html.Attribute) bool {
+	lookup := make(map[string]string)
+	for _, attr := range attrs {
+		normalizedKey := strings.ToLower(attr.Key)
+		lookup[normalizedKey] = attr.Value
+	}
 
-	// b.N is dynamically set by Go's testing tool. The loop will run b.N times
-	// to get an accurate measurement of the function's execution time.
-	for i := 0; i < b.N; i++ {
-		_, err := engine.InitDocument(benchmarkHTML)
-		if err != nil {
-			b.Fatal(err)
+	var attrsLength uint8 = uint8(len(attrs))
+	var counter uint8 = 0
+
+	for _, attr := range elementAttrs {
+		normalizedKey := strings.ToLower(attr.Key)
+		if valA, found := lookup[normalizedKey]; found {
+			if normalizedKey == "string" {
+				// use flex for equality and increment counter if it is true true and continue
+			}
+
+			if valA == attr.Val {
+				counter++
+			}
+		}
+	}
+
+	return attrsLength == counter
+}
+
+func nameSelector(n *html.Node, name string, attrs []*engine.Attribute) bool {
+	if n.Type == html.ElementNode && n.Data == name {
+		return FindMatchingAttributes(attrs, n.Attr)
+	}
+
+	return false
+}
+
+func traverse(n *html.Node, name string, attrs []*engine.Attribute, f func(*html.Node)) {
+
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		if nameSelector(c, name, attrs) {
+			f(c)
+		}
+
+		traverse(c, name, attrs, f)
+	}
+}
+
+func TestFindMatchingAttributes(t *testing.T) {
+	tests := []struct {
+		name         string
+		attr         []*engine.Attribute
+		elementAttrs []html.Attribute
+		expected     bool
+	}{
+		{
+			name: "returns false when all attributes value does not match",
+			attr: []*engine.Attribute{
+				{Key: "id", Value: "submit-btn"},
+				{Key: "class", Value: "btn-primary"},
+			},
+			elementAttrs: []html.Attribute{
+				{Key: "class", Val: "btn-primary-2"},
+				{Key: "id", Val: "submit-button"},
+			},
+			expected: false,
+		},
+		{
+			name: "returns true when all attributes value match",
+			attr: []*engine.Attribute{
+				{Key: "id", Value: "submit-btn"},
+				{Key: "class", Value: "btn-primary"},
+			},
+			elementAttrs: []html.Attribute{
+				{Key: "class", Val: "btn-primary"},
+				{Key: "id", Val: "submit-btn"},
+			},
+			expected: true,
+		},
+	}
+
+	// t.Run("Is Flexi work ", func(t *testing.T) {
+	// 	result := engine.FlexSearch("btn btn-primary", "btn-primary", false)
+
+	// 	if result != true {
+	// 		t.Errorf("expected %v but found %v", true, result)
+	// 	}
+	// })
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			result := FindMatchingAttributes(tc.attr, tc.elementAttrs)
+			if result != tc.expected {
+				t.Errorf("expected %v but found %v", tc.expected, result)
+			}
+		})
+	}
+}
+
+func BenchmarkMiniTest(b *testing.B) {
+	reader := strings.NewReader(generateMockHTML(50))
+	node, err := html.Parse(reader)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	b.StartTimer() // locate the position we will start the timer for the bench test
+	// 3. Run the actual loop
+
+	attr := []*engine.Attribute{
+		{Key: "id", Value: "footer-id"},
+	}
+
+	for b.Loop() {
+		traverse(node, "span", attr, func(n *html.Node) {
+
+		})
+	}
+}
+
+// BenchmarkFind benchmarks the Find method
+func BenchmarkFind(b *testing.B) {
+	scrape, err := engine.InitDocument(generateMockHTML(50))
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	// 1. Setup the data needed for the test
+	name := "div"
+	params := []*engine.Attribute{
+		{
+			Key:   "class",
+			Value: "main-panel",
+		},
+	}
+
+	// 2. Reset the timer to exclude the setup time above
+
+	b.StartTimer() // locate the position we will start the timer for the bench test
+	// 3. Run the actual loop
+	for b.Loop() {
+		scrape.Find(name, params, func(foundTag *engine.Tag) {
+			// Keep the callback minimal so we bench the method, not the callback logic
+		})
+	}
+}
+
+func BenchmarkEmpty(b *testing.B) {
+
+	b.StartTimer() // locate the position we will start the timer for the bench test
+	// 3. Run the actual loop
+	for b.Loop() {
+		for range 1 {
+			// fmt.Println("i:", i)
 		}
 	}
 }
 
-// BenchmarkTagSelect benchmarks how fast we can select elements using CSS selectors.
-func BenchmarkTagSelect(b *testing.B) {
-	// 1. Setup: Parse the document once before starting the benchmark.
-	doc, err := engine.InitDocument(benchmarkHTML)
+// BenchmarkFindAll benchmarks the FindAll method
+func BenchmarkFindAll(b *testing.B) {
+	scrape, err := engine.InitDocument(generateMockHTML(50))
 	if err != nil {
-		b.Fatal(err)
+		return
 	}
 
-	// 2. Reset the timer to exclude the setup time (parsing) from the benchmark results.
-	b.ResetTimer()
-	b.ReportAllocs()
+	name := "span"
+	params := []*engine.Attribute{
+		{
+			Key:   "id",
+			Value: "footer-id",
+		},
+	}
+	// params := map[string]any{"id": "footer-id"}
 
-	// 3. Run the selection operation b.N times.
-	for i := 0; i < b.N; i++ {
-		// Benchmark selecting all list items with class "item"
-		results := doc.Select("li.item")
-		if len(results) == 0 {
-			b.Fatal("expected to find items")
-		}
+	for b.Loop() {
+		_ = scrape.FindAll(name, params)
+	}
+}
+
+// BenchmarkFind_NilParams benchmarks how the code handles nil map inputs
+func BenchmarkFindFirst(b *testing.B) {
+	scrape, err := engine.InitDocument(generateMockHTML(50))
+	if err != nil {
+		return
+	}
+
+	name := "div"
+	params := []*engine.Attribute{
+		// {
+		// 	Key:   "id",
+		// 	Value: "footer-id",
+		// },
+		{
+			Key:   "class",
+			Value: "category-item",
+		},
+	}
+
+	b.StartTimer()
+	for b.Loop() {
+		scrape.FindFirst(name, params)
+	}
+}
+
+// Test select functionality
+func BenchmarkSelectOne(b *testing.B) {
+	scrape, err := engine.InitDocument(generateMockHTML(50))
+	if err != nil {
+		return
+	}
+
+	selector := "#header-id"
+	// params := map[string]any{"id": "footer-id"}
+
+	b.StartTimer()
+	for b.Loop() {
+		scrape.SelectOne(selector)
+	}
+}
+
+func BenchmarkSelectAll(b *testing.B) {
+	scrape, err := engine.InitDocument(generateMockHTML(50))
+	if err != nil {
+		return
+	}
+
+	selector := "#footer-id"
+	// params := map[string]any{"id": "footer-id"}
+
+	b.StartTimer()
+	for b.Loop() {
+		scrape.Select(selector)
 	}
 }

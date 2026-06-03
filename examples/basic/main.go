@@ -7,23 +7,58 @@ import (
 )
 
 func main() {
-	// requestTest()
-	stringTest()
-	exportDemo()
+	requestTest()
+	// stringTest()
 }
 
 func requestTest() {
-	scrape, err := engine.LoadDocument("http://127.0.0.1:5500/examples/basic/index.html")
+
+	input := `
+	<article class="data-card" data-category="electronics">
+		<div class="info">
+			<span class="price-tag">$899.99</span>
+			<span class="stock">In Stock</span>
+		</div>
+
+		<div class="details">
+			<div class="price-tag"> ETB 909.99 </div>
+			<span class="brand">Apple</span>
+			<span class="model">MacBook Air</span>
+		</div>
+	</article>
+	`
+	// scrape, err := engine.LoadDocument("http://127.0.0.1:5501/examples/basic/index.html")
+	scrape, err := engine.InitDocument(input)
 
 	if err != nil {
-		fmt.Println("Error loading document:", err)
+		fmt.Println("Error parsing HTML:", err)
 		return
 	}
+	params := []*engine.Attribute{
+		{
+			Key:   "class",
+			Value: "details",
+		},
+	}
 
-	// Use Each() for a callback-based approach
-	scrape.Find("span", map[string]any{"class": "item-count"}).Each(func(t engine.Tag) {
-		fmt.Println(t.Print(), ", ")
-	})
+	fmt.Println(scrape.FindFirst("div", params).Print())
+
+	// main := scrape.FindAll("span", map[string]any{"class": "item-count"})
+	// scrape.Find("span", map[string]any{"class": "item-count"}, func(t engine.Tag) {
+	// 	fmt.Println(t.Print(), ", ")
+	// })
+
+	// main := scrape.FindAll("div", params)
+	// fmt.Println(main.Print())
+
+	// scrape.Find("div", params, func(t engine.Tag) {
+	// 	fmt.Println(t.Print())
+	// })
+
+	// scrape.Query(".price-tag", func(t *engine.Tag) {
+	// 	fmt.Println(t.Print())
+	// })
+
 }
 
 func stringTest() {
@@ -83,7 +118,7 @@ func stringTest() {
 
 	fmt.Println("\n=== 4. Chained CSS Search ===")
 	brands := root.Select("article[data-category='electronics']").Select(".brand")
-	for _, b := range brands {
+	for _, b := range *brands {
 		fmt.Println("Brand in Electronics:", b.Print())
 	}
 }

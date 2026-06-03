@@ -10,11 +10,16 @@ import (
 
 type TraverseCallback func(Tag) bool
 
+type Attribute struct {
+	Key   string
+	Value string
+}
+
 func initTag(node *html.Node) Tag {
 	return Tag{root: node, Name: node.Data, Attrs: node.Attr}
 }
 
-func InitDocument(input any) (Tag, error) {
+func InitDocument(input any) (*Tag, error) {
 	var reader io.Reader
 
 	switch v := any(input).(type) {
@@ -23,23 +28,23 @@ func InitDocument(input any) (Tag, error) {
 	case []byte:
 		reader = strings.NewReader(string(v))
 	default:
-		return Tag{}, fmt.Errorf("unsupported input type: %T", input)
+		return nil, fmt.Errorf("unsupported input type: %T", input)
 	}
 
 	node, err := html.Parse(reader)
 	if err != nil {
-		return Tag{}, err
+		return nil, err
 	}
 
 	document := initTag(node)
-	return document, nil
+	return &document, nil
 }
 
-func LoadDocument(url string) (Tag, error) {
+func LoadDocument(url string) (*Tag, error) {
 	resp, err := InitRequest(url, "GET", nil).Execute()
 
 	if err != nil {
-		return Tag{}, err
+		return nil, err
 	}
 
 	return InitDocument(resp)
@@ -64,4 +69,8 @@ func (t Tag) FirstChild() Tag {
 
 func (t Tag) LastChild() Tag {
 	return initTag(t.root.LastChild)
+}
+
+func InitTag(node *html.Node) Tag {
+	return initTag(node)
 }
