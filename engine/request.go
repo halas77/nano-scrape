@@ -8,8 +8,6 @@ import (
 	"io"
 	"net/http"
 	"net/http/cookiejar"
-	"net/url"
-	"sync/atomic"
 	"time"
 )
 
@@ -18,21 +16,32 @@ type Request struct {
 	Method      string
 	Header      http.Header
 	ContentType string
+	client      *http.Client
 }
 
-func InitRequest(url string, method string, header http.Header) Request {
-	req := Request{Url: url, Method: method, Header: header}
-	return req
-}
-
-func (r Request) Execute(body ...map[string][]string) ([]byte, error) {
-
+func InitRequest(url string, method string, header http.Header) *Request {
 	jar, _ := cookiejar.New(nil)
 	client := &http.Client{
 		Timeout: 10 * time.Second,
 		Jar:     jar,
 	}
 
+	req := Request{Url: url, Method: method, Header: header, client: client}
+	return &req
+}
+
+func (r *Request) ProxyRotator(proxies ...string) {
+	rotator := NewProxyRotator(proxies)
+	r.client.Transport = &http.Transport{
+		Proxy:               rotator.GetProxyFunc(),
+		MaxIdleConns:        100,
+		IdleConnTimeout:     90 * time.Second,
+		TLSHandshakeTimeout: 10 * time.Second,
+	}
+}
+
+func (r *Request) Execute(body ...map[string][]string) ([]byte, error) {
+	client := r.client
 	req, err := http.NewRequest(r.Method, r.Url, nil)
 	if err != nil {
 		return nil, err
@@ -118,30 +127,7 @@ func Browser() {
 
 	fmt.Println("Successfully bypassed and fetched page!")
 }
-
 */
-
-// ProxyRotator holds a slice of proxy URLs and rotates through them sequentially
-type ProxyRotator struct {
-	proxies []string
-	index   atomic.Uint64
-}
-
-func NewProxyRotator(proxies []string) *ProxyRotator {
-	return &ProxyRotator{proxies: proxies}
-}
-
-// GetProxyFunc returns a function compatible with http.Transport.Proxy
-func (pr *ProxyRotator) GetProxyFunc() func(*http.Request) (*url.URL, error) {
-	return func(req *http.Request) (*url.URL, error) {
-		if len(pr.proxies) == 0 {
-			return nil, nil // Fallback to direct connection if pool is empty
-		}
-		// Thread-safe increment and modulo to get the next proxy
-		idx := pr.index.Add(1) % uint64(len(pr.proxies))
-		return url.Parse(pr.proxies[idx])
-	}
-}
 
 func main() {
 	proxyList := []string{
