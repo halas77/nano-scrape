@@ -60,14 +60,14 @@ func (t Tag) extractValue(selector string) string {
 	parts := strings.SplitN(selector, "@", 2)
 	sel := strings.TrimSpace(parts[0])
 
-	var match Tag
+	var match *Tag
 	if sel == "" {
-		match = t
+		match = &t
 	} else {
 		match = t.SelectOne(sel)
 	}
 
-	if match.root == nil {
+	if match == nil || match.root == nil {
 		return ""
 	}
 
@@ -190,8 +190,12 @@ func (ts Tags) ToMD() (string, error) {
 	headers := []string{"name", "text", "class", "id", "attributes"}
 
 	// Write header
-	buf.WriteString("| " + strings.Join(headers, " | ") + " |\n")
-	buf.WriteString("| " + strings.Repeat("--- | ", len(headers)-1) + "--- |\n")
+	buf.WriteString("| ")
+	buf.WriteString(strings.Join(headers, " | "))
+	buf.WriteString(" |\n")
+	buf.WriteString("| ")
+	buf.WriteString(strings.Repeat("--- | ", len(headers)-1))
+	buf.WriteString("--- |\n")
 
 	// Write records
 	for _, exp := range exports {
@@ -214,7 +218,9 @@ func (ts Tags) ToMD() (string, error) {
 			strings.ReplaceAll(exp.ID, "|", "\\|"),
 			strings.ReplaceAll(attrsStr, "|", "\\|"),
 		}
-		buf.WriteString("| " + strings.Join(row, " | ") + " |\n")
+		buf.WriteString("| ")
+		buf.WriteString(strings.Join(row, " | "))
+		buf.WriteString(" |\n")
 	}
 
 	return buf.String(), nil
@@ -304,8 +310,12 @@ func ExportMD(data []map[string]string) (string, error) {
 	var buf strings.Builder
 
 	// Write header
-	buf.WriteString("| " + strings.Join(headers, " | ") + " |\n")
-	buf.WriteString("| " + strings.Repeat("--- | ", len(headers)-1) + "--- |\n")
+	buf.WriteString("| ")
+	buf.WriteString(strings.Join(headers, " | "))
+	buf.WriteString(" |\n")
+	buf.WriteString("| ")
+	buf.WriteString(strings.Repeat("--- | ", len(headers)-1))
+	buf.WriteString("--- |\n")
 
 	// Write rows
 	for _, row := range data {
@@ -317,7 +327,9 @@ func ExportMD(data []map[string]string) (string, error) {
 			val = strings.ReplaceAll(val, "\r", "")
 			record[i] = val
 		}
-		buf.WriteString("| " + strings.Join(record, " | ") + " |\n")
+		buf.WriteString("| ")
+		buf.WriteString(strings.Join(record, " | "))
+		buf.WriteString(" |\n")
 	}
 
 	return buf.String(), nil
