@@ -24,12 +24,12 @@ type Tag struct {
 type Tags []*Tag
 type TagCallback func(*Tag)
 
-func (ts Tags) First() *Tag {
+func (ts *Tags) First() *Tag {
 
-	if len(ts) == 0 {
+	if ts == nil || len(*ts) == 0 {
 		return nil
 	}
-	return ts[0]
+	return (*ts)[0]
 }
 
 func (t *Tag) Query(selector string, f func(*Tag)) {
@@ -60,8 +60,6 @@ func (t *Tag) QueryAll(selector string) *Tags {
 	return tags
 }
 
-// Find query
-
 func (t *Tag) Find(name string, attrs []*Attribute, cb TagCallback) {
 
 	t.recurse = true
@@ -77,16 +75,16 @@ func (t *Tag) Find(name string, attrs []*Attribute, cb TagCallback) {
 	})
 }
 
-func (t *Tag) FindAll(name string, attribute ...[]*Attribute) Tags {
+func (t *Tag) FindAll(name string, attribute ...[]*Attribute) *Tags {
 
-	var tags = Tags{}
+	var tags = &Tags{}
 	var attr []*Attribute
 	if len(attribute) > 0 {
 		attr = attribute[0]
 	}
 
 	t.Find(name, attr, func(t *Tag) {
-		tags = append(tags, t)
+		*tags = append(*tags, t)
 	})
 
 	return tags
@@ -98,15 +96,14 @@ func (t *Tag) FindFirst(name string, attr ...[]*Attribute) *Tag {
 
 }
 
-// Select Functionality for css selectors
-func (t *Tag) Select(selector string, params ...map[string]any) Tags {
+func (t *Tag) Select(selector string, params ...map[string]any) *Tags {
 	sel, err := cascadia.Parse(selector)
 	if err != nil {
-		return Tags{}
+		return &Tags{}
 	}
 
 	matches := cascadia.QueryAll(t.root, sel)
-	var tags = Tags{}
+	var tags = &Tags{}
 
 	var p map[string]any
 	if len(params) > 0 {
@@ -119,7 +116,7 @@ func (t *Tag) Select(selector string, params ...map[string]any) Tags {
 				continue
 			}
 			if target, ok := p["string"]; ok {
-				str := getNodeStrings(*t)
+				str := t.getNodeStrings(n)
 				if targetStr, ok := target.(string); ok {
 					if !flexMatch(str, targetStr, false) {
 						continue
@@ -127,7 +124,7 @@ func (t *Tag) Select(selector string, params ...map[string]any) Tags {
 				}
 			}
 		}
-		tags = append(tags, &Tag{root: n, Name: n.Data, Attrs: n.Attr})
+		*tags = append(*tags, &Tag{root: n, Name: n.Data, Attrs: n.Attr})
 	}
 	return tags
 }
@@ -140,14 +137,14 @@ func (t *Tag) Text() string {
 	return strings.TrimSpace(t.getNodeStrings(t.root))
 }
 
-func (ts Tags) Select(selector string, params ...map[string]any) *Tags {
+func (ts *Tags) Select(selector string) *Tags {
 	var results Tags
-	for _, t := range ts {
-		results = append(results, t.Select(selector, params...)...)
+	for _, t := range *ts {
+		results = append(results, *t.Select(selector)...)
 	}
 	return &results
 }
 
-func (ts Tags) SelectOne(selector string, params ...map[string]any) *Tag {
-	return ts.Select(selector, params...).First()
+func (ts *Tags) SelectOne(selector string) *Tag {
+	return ts.Select(selector).First()
 }
