@@ -2,11 +2,14 @@ package engine
 
 import (
 	"bytes"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/cookiejar"
+	"net/url"
+	"sync/atomic"
 	"time"
 )
 
@@ -117,3 +120,55 @@ func Browser() {
 }
 
 */
+
+// ProxyRotator holds a slice of proxy URLs and rotates through them sequentially
+type ProxyRotator struct {
+	proxies []string
+	index   atomic.Uint64
+}
+
+func NewProxyRotator(proxies []string) *ProxyRotator {
+	return &ProxyRotator{proxies: proxies}
+}
+
+// GetProxyFunc returns a function compatible with http.Transport.Proxy
+func (pr *ProxyRotator) GetProxyFunc() func(*http.Request) (*url.URL, error) {
+	return func(req *http.Request) (*url.URL, error) {
+		if len(pr.proxies) == 0 {
+			return nil, nil // Fallback to direct connection if pool is empty
+		}
+		// Thread-safe increment and modulo to get the next proxy
+		idx := pr.index.Add(1) % uint64(len(pr.proxies))
+		return url.Parse(pr.proxies[idx])
+	}
+}
+
+func main() {
+	proxyList := []string{
+		"http://username:password@proxy1.example.com:8080",
+		"http://username:password@proxy2.example.com:8080",
+		"http://username:password@proxy3.example.com:8080",
+	}
+
+	rotator := NewProxyRotator(proxyList)
+
+	// Best Practice: Always set explicit timeouts on your client when scraping
+	transport := &http.Transport{
+		Proxy:           rotator.GetProxyFunc(),
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // Optional: if dealing with messy SSL certificates
+	}
+
+	client := &http.Client{
+		Transport: transport,
+		Timeout:   15 * time.Millisecond, // Crucial: don't let dead proxies hang your scraper
+	}
+
+	// Example request
+	resp, err := client.Get("https://httpbin.org/ip")
+	if err != nil {
+		fmt.Printf("Error fetching URL: %v\n", err)
+		return
+	}
+	defer resp.Body.Close()
+	fmt.Println("Request successful!")
+}
