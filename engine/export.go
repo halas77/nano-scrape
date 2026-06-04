@@ -41,9 +41,9 @@ func (t Tag) Export() TagExport {
 }
 
 // Export converts a Tags collection into a slice of serializable TagExport structures.
-func (ts Tags) Export() []TagExport {
+func (ts *Tags) Export() []TagExport {
 	var result []TagExport
-	for _, t := range ts {
+	for _, t := range *ts {
 		result = append(result, t.Export())
 	}
 	return result
@@ -95,9 +95,9 @@ func (t Tag) extractValue(selector string) string {
 //	    "url":   "a.product-link @href",
 //	}
 //	data := cards.Map(mapping)
-func (ts Tags) Map(mapping map[string]string) []map[string]string {
+func (ts *Tags) Map(mapping map[string]string) []map[string]string {
 	var result []map[string]string
-	for _, t := range ts {
+	for _, t := range *ts {
 		row := make(map[string]string)
 		for key, selector := range mapping {
 			row[key] = t.extractValue(selector)
@@ -108,12 +108,12 @@ func (ts Tags) Map(mapping map[string]string) []map[string]string {
 }
 
 // ToJSON converts the Tags collection directly into a pretty-printed JSON byte slice.
-func (ts Tags) ToJSON() ([]byte, error) {
+func (ts *Tags) ToJSON() ([]byte, error) {
 	return json.MarshalIndent(ts.Export(), "", "  ")
 }
 
 // ToCSV converts the Tags collection directly into a CSV representation (as a string).
-func (ts Tags) ToCSV() (string, error) {
+func (ts *Tags) ToCSV() (string, error) {
 	exports := ts.Export()
 	if len(exports) == 0 {
 		return "", nil
@@ -162,7 +162,7 @@ func (ts Tags) ToCSV() (string, error) {
 }
 
 // WriteJSON writes the Tags collection directly into a file formatted as JSON.
-func (ts Tags) WriteJSON(filename string) error {
+func (ts *Tags) WriteJSON(filename string) error {
 	data, err := ts.ToJSON()
 	if err != nil {
 		return err
@@ -171,7 +171,7 @@ func (ts Tags) WriteJSON(filename string) error {
 }
 
 // WriteCSV writes the Tags collection directly into a file formatted as CSV.
-func (ts Tags) WriteCSV(filename string) error {
+func (ts *Tags) WriteCSV(filename string) error {
 	csvStr, err := ts.ToCSV()
 	if err != nil {
 		return err
@@ -180,7 +180,7 @@ func (ts Tags) WriteCSV(filename string) error {
 }
 
 // ToMD converts the Tags collection directly into a Markdown table representation (as a string).
-func (ts Tags) ToMD() (string, error) {
+func (ts *Tags) ToMD() (string, error) {
 	exports := ts.Export()
 	if len(exports) == 0 {
 		return "", nil
@@ -227,7 +227,7 @@ func (ts Tags) ToMD() (string, error) {
 }
 
 // WriteMD writes the Tags collection directly into a file formatted as Markdown.
-func (ts Tags) WriteMD(filename string) error {
+func (ts *Tags) WriteMD(filename string) error {
 	mdStr, err := ts.ToMD()
 	if err != nil {
 		return err

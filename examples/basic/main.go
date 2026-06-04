@@ -8,7 +8,8 @@ import (
 
 func main() {
 	requestTest()
-	// stringTest()
+	stringTest()
+	exportDemo()
 }
 
 func requestTest() {
@@ -98,20 +99,20 @@ func stringTest() {
 
 	fmt.Println("=== 1. CSS Selector Search (.price-tag) ===")
 	prices := root.Select(".price-tag")
-	for _, p := range prices {
+	for _, p := range *prices {
 		fmt.Println("Price found:", p.Print())
 	}
 
 	fmt.Println("\n=== 2. CSS + Attribute Filtering (category: electronics) ===")
 	electronics := root.Select("article.data-card", map[string]any{"data-category": "electronics"})
-	for _, e := range electronics {
+	for _, e := range *electronics {
 		brand := e.SelectOne("span", map[string]any{"class": "brand"})
 		fmt.Printf("Electronic Item Brand: %s\n", brand.Print())
 	}
 
 	fmt.Println("\n=== 3. CSS + Deep Text Filtering ('Out of Stock') ===")
 	outOfStockItems := root.Select("article", map[string]any{"string": "Out of Stock"})
-	for _, item := range outOfStockItems {
+	for _, item := range *outOfStockItems {
 		model := item.SelectOne(".model")
 		fmt.Printf("Item Out of Stock: %s\n", model.Print())
 	}
