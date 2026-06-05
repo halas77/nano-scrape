@@ -209,6 +209,91 @@ func TestFindMatchingAttributes(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestExport(t *testing.T) {
+	htmlContent := `
+		<div id="container">
+			<div class="item" data-category="books">
+				<span class="title">Go Programming</span>
+				<span class="price">$39.99</span>
+			</div>
+			<div class="item" data-category="electronics">
+				<span class="title">Mechanical Keyboard</span>
+				<span class="price">$99.99</span>
+			</div>
+		</div>
+	`
+
+	doc, err := InitDocument(htmlContent)
+	if err != nil {
+		t.Fatalf("Failed to initialize document: %v", err)
+	}
+
+	items := doc.SelectAll(".item")
+	if len(*items) != 2 {
+		t.Fatalf("Expected 2 items, got %d", len(*items))
+	}
+
+	// 1. Test Map mapping
+	mapping := map[string]string{
+		"category": "@data-category",
+		"title":    "span.title",
+		"price":    "span.price",
+	}
+
+	mappedData := items.Map(mapping)
+	if len(mappedData) != 2 {
+		t.Fatalf("Expected 2 mapped items, got %d", len(mappedData))
+	}
+
+	if mappedData[0]["category"] != "books" || mappedData[0]["title"] != "Go Programming" || mappedData[0]["price"] != "$39.99" {
+		t.Errorf("Incorrect mapping for first item: %v", mappedData[0])
+	}
+	if mappedData[1]["category"] != "electronics" || mappedData[1]["title"] != "Mechanical Keyboard" || mappedData[1]["price"] != "$99.99" {
+		t.Errorf("Incorrect mapping for second item: %v", mappedData[1])
+	}
+
+	// 2. Test ExportJSON
+	jsonBytes, err := ExportJSON(mappedData)
+	if err != nil {
+		t.Errorf("ExportJSON failed: %v", err)
+	}
+	jsonStr := string(jsonBytes)
+	if !strings.Contains(jsonStr, `"category": "books"`) || !strings.Contains(jsonStr, `"title": "Mechanical Keyboard"`) {
+		t.Errorf("ExportJSON output does not contain expected fields: %s", jsonStr)
+	}
+
+	// 3. Test ExportCSV
+	csvStr, err := ExportCSV(mappedData)
+	if err != nil {
+		t.Errorf("ExportCSV failed: %v", err)
+	}
+	if !strings.Contains(csvStr, "category,price,title") {
+		t.Errorf("ExportCSV header is incorrect: %s", csvStr)
+	}
+	if !strings.Contains(csvStr, "books,$39.99,Go Programming") {
+		t.Errorf("ExportCSV row 1 is incorrect: %s", csvStr)
+	}
+
+	// 4. Test direct Tags ToJSON
+	tagsJSON, err := items.ToJSON()
+	if err != nil {
+		t.Errorf("items.ToJSON failed: %v", err)
+	}
+	tagsJSONStr := string(tagsJSON)
+	if !strings.Contains(tagsJSONStr, `"class": "item"`) {
+		t.Errorf("Tags ToJSON output does not contain expected class field: %s", tagsJSONStr)
+	}
+
+	// 5. Test direct Tags ToCSV
+	tagsCSV, err := items.ToCSV()
+	if err != nil {
+		t.Errorf("items.ToCSV failed: %v", err)
+	}
+	if !strings.Contains(tagsCSV, "name,text,class,id,attributes") {
+		t.Errorf("Tags ToCSV header is incorrect: %s", tagsCSV)
+	}
 
 	// 6. Test direct Tags ToMD
 	tagsMD, err := items.ToMD()
