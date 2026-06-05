@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/halas77/goscrape/engine"
 )
@@ -107,17 +108,22 @@ func stringTest() {
 	}
 
 	fmt.Println("\n=== 2. CSS + Attribute Filtering (category: electronics) ===")
-	electronics := root.Select("article.data-card", map[string]any{"data-category": "electronics"})
+	electronics := root.Select("article.data-card[data-category='electronics']")
 	for _, e := range *electronics {
-		brand := e.SelectOne("span", map[string]any{"class": "brand"})
+		// Use a specific CSS selector instead of the extra params map
+		brand := e.SelectOne("span.brand")
 		fmt.Printf("Electronic Item Brand: %s\n", brand.Print())
 	}
 
 	fmt.Println("\n=== 3. CSS + Deep Text Filtering ('Out of Stock') ===")
-	outOfStockItems := root.Select("article", map[string]any{"string": "Out of Stock"})
+	// Note: CSS selectors don't natively support deep text matching in all variants,
+	// but for now we simplify the example to use a selector.
+	outOfStockItems := root.Select("article")
 	for _, item := range *outOfStockItems {
-		model := item.SelectOne(".model")
-		fmt.Printf("Item Out of Stock: %s\n", model.Print())
+		if strings.Contains(item.Text(), "Out of Stock") {
+			model := item.SelectOne(".model")
+			fmt.Printf("Item Out of Stock: %s\n", model.Print())
+		}
 	}
 
 	fmt.Println("\n=== 4. Chained CSS Search ===")

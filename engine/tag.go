@@ -90,47 +90,23 @@ func (t *Tag) FindAll(name string, attribute ...[]*Attribute) *Tags {
 	return tags
 }
 
-func (t *Tag) FindFirst(name string, attr ...[]*Attribute) *Tag {
+func (t *Tag) FindFirst(name string, attribute ...[]*Attribute) *Tag {
+	var result *Tag
+	var attr []*Attribute
+	if len(attribute) > 0 {
+		attr = attribute[0]
+	}
+
 	t.limit = 1
-	return t.FindAll(name, attr...).First()
+	t.Find(name, attr, func(found *Tag) {
+		result = found
+	})
 
+	return result
 }
 
-func (t *Tag) Select(selector string, params ...map[string]any) *Tags {
-	sel, err := cascadia.Parse(selector)
-	if err != nil {
-		return &Tags{}
-	}
-
-	matches := cascadia.QueryAll(t.root, sel)
-	var tags = &Tags{}
-
-	var p map[string]any
-	if len(params) > 0 {
-		p = params[0]
-	}
-
-	for _, n := range matches {
-		if p != nil {
-			if !hasIntersection(p, n.Attr, false) {
-				continue
-			}
-			if target, ok := p["string"]; ok {
-				str := t.getNodeStrings(n)
-				if targetStr, ok := target.(string); ok {
-					if !flexMatch(str, targetStr, false) {
-						continue
-					}
-				}
-			}
-		}
-		*tags = append(*tags, &Tag{root: n, Name: n.Data, Attrs: n.Attr})
-	}
-	return tags
-}
-
-func (t *Tag) SelectOne(selector string, params ...map[string]any) *Tag {
-	return t.Select(selector, params...).First()
+func (t *Tag) Select(selector string) *Tags {
+	return t.QueryAll(selector)
 }
 
 func (t *Tag) Text() string {
@@ -143,6 +119,15 @@ func (ts *Tags) Select(selector string) *Tags {
 		results = append(results, *t.Select(selector)...)
 	}
 	return &results
+}
+
+func (t *Tag) SelectOne(selector string) *Tag {
+	var result *Tag
+	t.limit = 1
+	t.Query(selector, func(found *Tag) {
+		result = found
+	})
+	return result
 }
 
 func (ts *Tags) SelectOne(selector string) *Tag {
