@@ -64,7 +64,7 @@ func (t Tag) extractValue(selector string) string {
 	if sel == "" {
 		match = &t
 	} else {
-		match = t.SelectOne(sel)
+		match = t.Select(sel)
 	}
 
 	if match == nil || match.root == nil {

@@ -105,7 +105,7 @@ func (t *Tag) FindFirst(name string, attribute ...[]*Attribute) *Tag {
 	return result
 }
 
-func (t *Tag) Select(selector string) *Tags {
+func (t *Tag) SelectAll(selector string) *Tags {
 	return t.QueryAll(selector)
 }
 
@@ -113,15 +113,15 @@ func (t *Tag) Text() string {
 	return strings.TrimSpace(t.getNodeStrings(t.root))
 }
 
-func (ts *Tags) Select(selector string) *Tags {
+func (ts *Tags) SelectAll(selector string) *Tags {
 	var results Tags
 	for _, t := range *ts {
-		results = append(results, *t.Select(selector)...)
+		results = append(results, *t.SelectAll(selector)...)
 	}
 	return &results
 }
 
-func (t *Tag) SelectOne(selector string) *Tag {
+func (t *Tag) Select(selector string) *Tag {
 	var result *Tag
 	t.limit = 1
 	t.Query(selector, func(found *Tag) {
@@ -130,6 +130,6 @@ func (t *Tag) SelectOne(selector string) *Tag {
 	return result
 }
 
-func (ts *Tags) SelectOne(selector string) *Tag {
-	return ts.Select(selector).First()
+func (ts *Tags) Select(selector string) *Tag {
+	return ts.SelectAll(selector).First()
 }

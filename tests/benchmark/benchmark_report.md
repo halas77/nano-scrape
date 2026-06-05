@@ -12,11 +12,11 @@ This document records the performance of the Tag engine functions.
 | Function | Performance (ns/op) | Memory (B/op) | Allocs (allocs/op) | Note |
 | :--- | :--- | :--- | :--- | :--- |
 | `Find` | 1,259 | 144 | 1 | Stops at first match. Most efficient raw search. |
-| `SelectOne` | 525 | 176 | 3 | Optimized lazy-search with CSS selectors. |
+| `Select` | 525 | 176 | 3 | Optimized lazy-search with CSS selectors. |
 | `FindAll` | 1,979 | 1,712 | 16 | Returns a full collection using attribute search. |
-| `Select` | 3,377 | 1,744 | 18 | Fully parses CSS and returns a collection. |
+| `SelectAll` | 3,377 | 1,744 | 18 | Fully parses CSS and returns a collection. |
 
 ## Strategy Summary
-- **Lazy Loading**: `SelectOne` and `FindFirst` use `limit=1` to stop tree traversal early.
+- **Lazy Loading**: `Select` and `FindFirst` use `limit=1` to stop tree traversal early.
 - **Memory Reuse**: We minimize intermediate slice allocations by using callbacks where possible.
 - **CSS Parser**: Powered by `cascadia`, but optimized with our internal `traverse` engine.

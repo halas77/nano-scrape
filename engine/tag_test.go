@@ -193,7 +193,7 @@ func BenchmarkFindFirst(b *testing.B) {
 }
 
 // Test select functionality
-func BenchmarkSelectOne(b *testing.B) {
+func BenchmarkSelect(b *testing.B) {
 	scrape, err := InitDocument(generateMockHTML(50))
 	if err != nil {
 		return
@@ -204,6 +204,6 @@ func BenchmarkSelectOne(b *testing.B) {
 
 	b.StartTimer()
 	for b.Loop() {
-		scrape.SelectOne(selector)
+		scrape.Select(selector)
 	}
 }

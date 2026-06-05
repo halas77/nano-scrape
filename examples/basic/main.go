@@ -99,32 +99,34 @@ func stringTest() {
 	}
 
 	fmt.Println("=== 1. CSS Selector Search (.price-tag) ===")
-	prices := root.Select(".price-tag")
-	for _, p := range *prices {
+	prices := root.SelectAll(".price-tag")
+	for i := range *prices {
+		p := (*prices)[i]
 		fmt.Println("Price found:", p.Print())
 	}
 
 	fmt.Println("\n=== 2. CSS + Attribute Filtering (category: electronics) ===")
-	electronics := root.Select("article.data-card[data-category='electronics']")
-	for _, e := range *electronics {
+	electronics := root.SelectAll("article.data-card[data-category='electronics']")
+	for i := range *electronics {
+		e := (*electronics)[i]
 		// Use a specific CSS selector instead of the extra params map
-		brand := e.SelectOne("span.brand")
+		brand := e.Select("span.brand")
 		fmt.Printf("Electronic Item Brand: %s\n", brand.Print())
 	}
 
 	fmt.Println("\n=== 3. CSS + Deep Text Filtering ('Out of Stock') ===")
 	// Note: CSS selectors don't natively support deep text matching in all variants,
 	// but for now we simplify the example to use a selector.
-	outOfStockItems := root.Select("article")
+	outOfStockItems := root.SelectAll("article")
 	for _, item := range *outOfStockItems {
 		if strings.Contains(item.Text(), "Out of Stock") {
-			model := item.SelectOne(".model")
+			model := item.Select(".model")
 			fmt.Printf("Item Out of Stock: %s\n", model.Print())
 		}
 	}
 
 	fmt.Println("\n=== 4. Chained CSS Search ===")
-	brands := root.Select("article[data-category='electronics']").Select(".brand")
+	brands := root.SelectAll("article[data-category='electronics']").SelectAll(".brand")
 	for _, b := range *brands {
 		fmt.Println("Brand in Electronics:", b.Print())
 	}
@@ -152,7 +154,7 @@ func exportDemo() {
 		return
 	}
 
-	products := root.Select(".product-item")
+	products := root.SelectAll(".product-item")
 
 	fmt.Println("\n=== 5. Built-in Structured Export mapping (Tag mapping to structured JSON/CSV) ===")
 	// Map extracted data with both text nodes and attributes (with @ prefix)
