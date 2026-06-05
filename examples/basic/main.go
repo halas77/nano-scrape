@@ -8,9 +8,14 @@ import (
 )
 
 func main() {
-	requestTest()
+	// requestTest()
 	stringTest()
 	exportDemo()
+	// stringTest()
+
+	// proxyTester()
+
+	testFromPost()
 }
 
 func requestTest() {
@@ -29,26 +34,24 @@ func requestTest() {
 		</div>
 	</article>
 	`
-	// scrape, err := engine.LoadDocument("http://127.0.0.1:5501/examples/basic/index.html")
-	scrape, err := engine.InitDocument(input)
+
+	input = "http://127.0.0.1:5501/examples/basic/index.html"
+	scrape, err := engine.LoadDocument(input)
+	// scrape, err := engine.InitDocument(input)
+
+	fmt.Println(scrape.FindFirst("main").Print())
 
 	if err != nil {
 		fmt.Println("Error parsing HTML:", err)
 		return
 	}
-	params := []*engine.Attribute{
-		{
-			Key:   "class",
-			Value: "details",
-		},
-	}
 
-	fmt.Println(scrape.FindFirst("div", params).Print())
-
-	// main := scrape.FindAll("span", map[string]any{"class": "item-count"})
-	// scrape.Find("span", map[string]any{"class": "item-count"}, func(t engine.Tag) {
-	// 	fmt.Println(t.Print(), ", ")
-	// })
+	// params := []*engine.Attribute{
+	// 	{
+	// 		Key:   "class",
+	// 		Value: "details",
+	// 	},
+	// }
 
 	// main := scrape.FindAll("div", params)
 	// fmt.Println(main.Print())
@@ -233,3 +236,108 @@ func exportDemo() {
 	}
 }
 
+func proxyTester() {
+	// paste your freshly gathered public proxies here (include http:// prefix)
+	publicProxies := []string{
+		"http://2.26.3.66:8080",
+		// "http://2.26.17.187:8888",
+		// "http://23.247.136.254:80",
+	}
+
+	// rotator := engine.NewProxyRotator(publicProxies)
+	input := "http://127.0.0.1:8000/home"
+	request := engine.InitRequest()
+
+	request.ProxyRotator(publicProxies...)
+	requestsCount := 4
+	for i := 1; i <= requestsCount; i++ {
+		body, err := request.Execute(input, "GET")
+
+		if err != nil {
+			fmt.Printf("[Req %d] ❌ Failed: %v (The public proxy might be dead)\n", i, err)
+			return
+		}
+
+		// ipPattern := regexp.MustCompile(`\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b`)
+
+		// Find the first match inside the HTML string
+		s, err := engine.InitDocument(body)
+		if err != nil {
+			fmt.Printf("[Req %d] ❌ Failed to parse HTML: %v\n", i, err)
+			return
+		}
+
+		// callerIP := ipPattern.FindString(string(body))
+		fmt.Printf("[Req %d] ✅ Success! Server Response:\n%s\n", i, s.Select("#ip-test").Print())
+	}
+
+	fmt.Println("🏁 Test finished.")
+}
+
+func testFromPost() {
+	url := "http://127.0.0.1:8000/login"
+	req := engine.InitRequest()
+
+	// Get login page with the same client used for POST so cookies/session are shared.
+	body, err := req.Execute(url, "GET")
+	if err != nil {
+		fmt.Println("Error loading login page:", err)
+		return
+	}
+
+	scrape, err := engine.InitDocument(body)
+	if err != nil {
+		fmt.Println("Error parsing login page:", err)
+		return
+	}
+
+	params := []*engine.Attribute{{Key: "name", Value: "_token"}}
+	tokenInput := scrape.FindFirst("input", params)
+	if tokenInput.Name == "" {
+		fmt.Println("CSRF token input not found")
+		return
+	}
+
+	token := ""
+	for _, attr := range tokenInput.Attrs {
+		if attr.Key == "value" {
+			token = attr.Val
+			break
+		}
+	}
+
+	if token == "" {
+		fmt.Println("CSRF token value missing")
+		return
+	}
+
+	payload := map[string]string{
+		"_token":   token,
+		"email":    "superadmin@test.com",
+		"password": "password123",
+	}
+
+	_, err = req.MakeFormPostRequest(url, "POST", payload)
+
+	if err != nil {
+		fmt.Println("Error making POST request:", err)
+		return
+	}
+
+	fmt.Println("Login request sent successfully")
+	fmt.Println("Cookies:", req.CookiesFor(url))
+
+	body, err2 := req.Execute("http://127.0.0.1:8000/companies", "GET")
+	if err2 != nil {
+		fmt.Println("Error loading login page:", err2)
+		return
+	}
+
+	scrape, err3 := engine.InitDocument(body)
+	if err3 != nil {
+		fmt.Println("Error parsing companies page:", err3)
+		return
+	}
+
+	fmt.Println(scrape.FindAll("tr").Print())
+}

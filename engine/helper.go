@@ -15,8 +15,8 @@ type Attribute struct {
 	Value string
 }
 
-func initTag(node *html.Node) Tag {
-	return Tag{root: node, Name: node.Data, Attrs: node.Attr}
+func initTag(node *html.Node) *Tag {
+	return &Tag{root: node, Name: node.Data, Attrs: node.Attr}
 }
 
 func InitDocument(input any) (*Tag, error) {
@@ -32,16 +32,21 @@ func InitDocument(input any) (*Tag, error) {
 	}
 
 	node, err := html.Parse(reader)
+
+	if node == nil {
+		fmt.Println("Nilllllllllllll")
+	}
+
 	if err != nil {
 		return nil, err
 	}
 
 	document := initTag(node)
-	return &document, nil
+	return document, nil
 }
 
 func LoadDocument(url string) (*Tag, error) {
-	resp, err := InitRequest(url, "GET", nil).Execute()
+	resp, err := InitRequest().Execute(url, "GET")
 
 	if err != nil {
 		return nil, err
@@ -51,26 +56,26 @@ func LoadDocument(url string) (*Tag, error) {
 
 }
 
-func (t Tag) Next() Tag {
+func (t *Tag) Next() *Tag {
 	return initTag(t.root.NextSibling)
 }
 
-func (t Tag) Previous() Tag {
+func (t *Tag) Previous() *Tag {
 	return initTag(t.root.PrevSibling)
 }
 
-func (t Tag) Parent() Tag {
+func (t *Tag) Parent() *Tag {
 	return initTag(t.root.Parent)
 }
 
-func (t Tag) FirstChild() Tag {
+func (t *Tag) FirstChild() *Tag {
 	return initTag(t.root.FirstChild)
 }
 
-func (t Tag) LastChild() Tag {
+func (t *Tag) LastChild() *Tag {
 	return initTag(t.root.LastChild)
 }
 
-func InitTag(node *html.Node) Tag {
+func InitTag(node *html.Node) *Tag {
 	return initTag(node)
 }

@@ -2,35 +2,54 @@ package engine
 
 import (
 	"bytes"
-	"errors"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/cookiejar"
+	"net/url"
+	"strings"
 	"time"
 )
 
 type Request struct {
-	Url         string
-	Method      string
-	Header      http.Header
-	ContentType string
+	Header http.Header
+	client *http.Client
 }
 
-func InitRequest(url string, method string, header http.Header) Request {
-	req := Request{Url: url, Method: method, Header: header}
-	return req
-}
-
-func (r Request) Execute(body ...map[string][]string) ([]byte, error) {
-
+func InitRequest(header ...http.Header) *Request {
 	jar, _ := cookiejar.New(nil)
 	client := &http.Client{
 		Timeout: 10 * time.Second,
 		Jar:     jar,
 	}
 
-	req, err := http.NewRequest(r.Method, r.Url, nil)
+	var hdr http.Header
+	if len(header) > 0 {
+		hdr = header[0]
+	}
+	req := Request{Header: hdr, client: client}
+	return &req
+}
+
+func (r *Request) ProxyRotator(proxies ...string) {
+	rotator := NewProxyRotator(proxies)
+	r.client.Transport = &http.Transport{
+		Proxy:               rotator.GetProxyFunc(),
+		MaxIdleConns:        100,
+		IdleConnTimeout:     90 * time.Second,
+		TLSHandshakeTimeout: 10 * time.Second,
+	}
+}
+
+func (r *Request) Execute(url string, method string, body ...io.Reader) ([]byte, error) {
+	client := r.client
+
+	var reqBody io.Reader
+	if len(body) > 0 && body[0] != nil {
+		reqBody = body[0]
+	}
+	req, err := http.NewRequest(method, url, reqBody)
 	if err != nil {
 		return nil, err
 	}
@@ -39,18 +58,25 @@ func (r Request) Execute(body ...map[string][]string) ([]byte, error) {
 	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
 	req.Header.Set("Accept-Language", "en-US,en;q=0.5")
 
+	for key, values := range r.Header {
+		for _, value := range values {
+			req.Header.Set(key, value)
+		}
+	}
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
-	if isBotBlock(resp) {
-		fmt.Println("-------- There is a bot ---------------")
-	}
+	// if isBotBlock(resp) {
+	// 	fmt.Println("-------- There is a bot ---------------")
+	// }
 
 	if resp.StatusCode != http.StatusOK {
 		fmt.Printf("Error: status code %d\n", resp.StatusCode)
-		return nil, errors.New("Server responded with status code: " + string(rune(resp.StatusCode)))
+		return nil, fmt.Errorf("server responded with status code: %d", resp.StatusCode)
 	}
 
 	bodyBytes, err := io.ReadAll(resp.Body)
@@ -58,9 +84,45 @@ func (r Request) Execute(body ...map[string][]string) ([]byte, error) {
 		return nil, err
 	}
 
-	defer resp.Body.Close()
-
 	return bodyBytes, nil
+}
+
+func (r *Request) MakeJSONPostRequest(url string, method string, payload map[string]string) ([]byte, error) {
+	jsonValue, _ := json.Marshal(payload)
+	if r.Header == nil {
+		r.Header = make(http.Header)
+	}
+	r.Header.Set("Content-Type", "application/json")
+
+	reqBody := bytes.NewReader(jsonValue)
+	resp, err := r.Execute(url, method, reqBody)
+
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func (r *Request) MakeFormPostRequest(URL string, method string, payload map[string]string) ([]byte, error) {
+
+	formData := url.Values{}
+	for key, val := range payload {
+		formData.Set(key, val)
+	}
+
+	if r.Header == nil {
+		r.Header = make(http.Header)
+	}
+	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	reqBody := strings.NewReader(formData.Encode())
+	resp, err := r.Execute(URL, method, reqBody)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }
 
 func isBotBlock(resp *http.Response) bool {
@@ -89,31 +151,30 @@ func isBotBlock(resp *http.Response) bool {
 	return false
 }
 
-/*
-func Browser() {
-	// Create context and allocate a browser instance
-	ctx, cancel := chromedp.NewContext(context.Background())
-	defer cancel()
+// Cookies returns cookies currently stored in the jar for Request.Url.
+// func (r *Request) Cookies() []*http.Cookie {
+// 	if r == nil || r.client == nil || r.client.Jar == nil {
+// 		return nil
+// 	}
 
-	// Set a timeout
-	ctx, cancel = context.WithTimeout(ctx, 60*time.Second)
-	defer cancel()
+// 	u, err := url.Parse(r.Url)
+// 	if err != nil {
+// 		return nil
+// 	}
 
-	var htmlContent string
+// 	return r.client.Jar.Cookies(u)
+// }
 
-	// Navigate and wait for the page to evaluate JavaScript/solve challenges
-	err := chromedp.Run(ctx,
-		chromedp.Navigate(`https://target-website.com`),
-		// Wait for a specific element that proves you passed the challenge
-		chromedp.WaitVisible(`#main-content-loaded`, chromedp.ByID),
-		// Grab the rendered HTML
-		chromedp.OuterHTML(`html`, &htmlContent),
-	)
-	if err != nil {
-		log.Fatalf("Failed to bypass via Chromedp: %v", err)
+// CookiesFor returns cookies currently stored in the jar for a specific URL.
+func (r *Request) CookiesFor(rawURL string) []*http.Cookie {
+	if r == nil || r.client == nil || r.client.Jar == nil || rawURL == "" {
+		return nil
 	}
 
-	fmt.Println("Successfully bypassed and fetched page!")
-}
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		return nil
+	}
 
-*/
+	return r.client.Jar.Cookies(u)
+}
