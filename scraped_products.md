@@ -1,4 +1,0 @@
-| name | price | sku | url |
-| --- | --- | --- | --- |
-| Neural Link V1 | $1200.00 | SKU-NEURAL | /products/neural |
-| Haptic Glove Pro | $650.00 | SKU-GLOVE | /products/haptic |
