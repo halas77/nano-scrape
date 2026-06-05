@@ -32,6 +32,11 @@ func InitDocument(input any) (*Tag, error) {
 	}
 
 	node, err := html.Parse(reader)
+
+	if node == nil {
+		fmt.Println("Nilllllllllllll")
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +46,7 @@ func InitDocument(input any) (*Tag, error) {
 }
 
 func LoadDocument(url string) (*Tag, error) {
-	resp, err := InitRequest(url, "GET", nil).Execute()
+	resp, err := InitRequest().Execute(url, "GET")
 
 	if err != nil {
 		return nil, err
