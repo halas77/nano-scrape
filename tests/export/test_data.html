@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mock E-Commerce Store for Scrape & Export Testing</title>
+</head>
+<body>
+    <!-- Site Header -->
+    <header id="main-header" class="site-header" data-version="1.2">
+        <h1 class="logo">ShopAntigravity</h1>
+        <p class="tagline">Premium products, instant delivery!</p>
+    </header>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar" id="top-nav">
+        <ul class="nav-links">
+            <li><a href="/home" class="nav-item" data-id="home-link">Home</a></li>
+            <li><a href="/products" class="nav-item active" data-id="prod-link">Products</a></li>
+            <li><a href="/about" class="nav-item" data-id="about-link">About Us</a></li>
+            <li><a href="/contact" class="nav-item" data-id="contact-link">Contact</a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content Container -->
+    <main id="content-container">
+        <!-- Section: Featured Products Cards -->
+        <section class="featured-products">
+            <h2>Featured Cards</h2>
+            <div class="products-grid">
+                <!-- Product Card 1 -->
+                <div class="product-card" data-sku="SKU-CHIPS-9" data-category="snacks">
+                    <h3 class="name">Crispy Potato Chips</h3>
+                    <span class="price">$3.99</span>
+                    <p class="description">Lightly salted | freshly packaged product.
+Best consumed within 6 months.</p>
+                    <a href="/products/chips" class="details-link" data-tracking="btn-chips-1">View Product</a>
+                </div>
+
+                <!-- Product Card 2 -->
+                <div class="product-card" data-sku="SKU-ROBOT-88" data-category="electronics">
+                    <h3 class="name">Smart Robot Vacuum</h3>
+                    <span class="price">$299.99</span>
+                    <p class="description">Automated floor cleaner.
+Has a 3-stage cleaning system | quiet mode.</p>
+                    <a href="/products/robot" class="details-link" data-tracking="btn-robot-2">View Product</a>
+                </div>
+
+                <!-- Product Card 3 -->
+                <div class="product-card" data-sku="SKU-COFFEE-M" data-category="beverages">
+                    <h3 class="name">Organic Dark Roast</h3>
+                    <span class="price">$14.50</span>
+                    <p class="description">Rich aroma | 100% Arabica beans.
+Grown in high-altitude volcanic soils.</p>
+                    <a href="/products/coffee" class="details-link" data-tracking="btn-coffee-3">View Product</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Inventory Table -->
+        <section class="inventory-section">
+            <h2>Warehouse Stock Details</h2>
+            <table class="inventory-table" id="stock-table">
+                <thead>
+                    <tr>
+                        <th>SKU Code</th>
+                        <th>Item Description</th>
+                        <th>Qty in Stock</th>
+                        <th>Shelf Location</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="table-row status-high" data-aisle="A4">
+                        <td class="sku-cell">SKU-CHIPS-9</td>
+                        <td class="desc-cell">Potato Chips - Original Salted</td>
+                        <td class="qty-cell">1,200</td>
+                        <td class="shelf-cell">A4-12</td>
+                    </tr>
+                    <tr class="table-row status-low" data-aisle="B2">
+                        <td class="sku-cell">SKU-ROBOT-88</td>
+                        <td class="desc-cell">Smart Robot Vacuum V2</td>
+                        <td class="qty-cell">15</td>
+                        <td class="shelf-cell">B2-04</td>
+                    </tr>
+                    <tr class="table-row status-medium" data-aisle="C1">
+                        <td class="sku-cell">SKU-COFFEE-M</td>
+                        <td class="desc-cell">Dark Roast Beans - Bag (1lb)</td>
+                        <td class="qty-cell">340</td>
+                        <td class="shelf-cell">C1-09</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer id="main-footer" class="site-footer">
+        <p>&copy; 2026 ShopAntigravity. All rights reserved.</p>
+        <div class="footer-links">
+            <a href="/privacy" class="foot-link">Privacy Policy</a> |
+            <a href="/terms" class="foot-link">Terms of Service</a>
+        </div>
+    </footer>
+</body>
+</html>
