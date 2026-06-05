@@ -47,6 +47,17 @@ func BenchmarkFindAllPath(b *testing.B) {
 	}
 }
 
+// BenchmarkFindFirstPath measures the performance of retrieving the first matching tag.
+func BenchmarkFindFirstPath(b *testing.B) {
+	tag := loadBenchmarkTag(b)
+	name := "div"
+	attrs := []*engine.Attribute{{Key: "class", Value: "category-item"}}
+	b.ResetTimer()
+	for b.Loop() {
+		tag.FindFirst(name, attrs)
+	}
+}
+
 // BenchmarkSelectPath measures the performance of Select on a single Tag.
 func BenchmarkSelectPath(b *testing.B) {
 	tag := loadBenchmarkTag(b)
@@ -66,15 +77,3 @@ func BenchmarkSelectAllPath(b *testing.B) {
 		tag.SelectAll(selector)
 	}
 }
-
-// BenchmarkFindFirstPath measures the performance of retrieving the first matching tag.
-func BenchmarkFindFirstPath(b *testing.B) {
-	tag := loadBenchmarkTag(b)
-	name := "div"
-	attrs := []*engine.Attribute{{Key: "class", Value: "category-item"}}
-	b.ResetTimer()
-	for b.Loop() {
-		tag.FindFirst(name, attrs)
-	}
-}
-

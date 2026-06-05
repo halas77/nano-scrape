@@ -15,7 +15,7 @@ This document records the performance of the Tag engine functions.
 | `Find`      | 1,201               | 0             | 0                  | Searches entire tree using tag/attributes. 0 allocs if no match. |
 | `FindFirst` | 294                 | 144           | 1                  | Stops at first match. Most efficient raw search early exit.      |
 | `FindAll`   | 2,198               | 1,712         | 16                 | Returns a full collection using attribute search.                |
-| `Select`    | 490                 | 176           | 3                  | Optimized lazy-search with CSS selectors (stops at first match). |
+| `Select`    | 430                 | 176           | 3                  | Optimized CSS selector early-exit using QueryOne.               |
 | `SelectAll` | 3,070               | 1,744         | 18                 | Fully parses CSS and returns a collection.                       |
 
 ## Strategy Summary
