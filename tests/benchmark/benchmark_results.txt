@@ -1,0 +1,21 @@
+goos: linux
+goarch: amd64
+pkg: github.com/halas77/goscrape/tests/benchmark
+cpu: 12th Gen Intel(R) Core(TM) i5-12500
+BenchmarkFindPath-12         	  984153	      1201 ns/op	       0 B/op	       0 allocs/op
+BenchmarkFindPath-12         	 1000000	      1204 ns/op	       0 B/op	       0 allocs/op
+BenchmarkFindPath-12         	  992115	      1199 ns/op	       0 B/op	       0 allocs/op
+BenchmarkFindAllPath-12      	  613858	      2234 ns/op	    1712 B/op	      16 allocs/op
+BenchmarkFindAllPath-12      	  628422	      2209 ns/op	    1712 B/op	      16 allocs/op
+BenchmarkFindAllPath-12      	  648338	      2153 ns/op	    1712 B/op	      16 allocs/op
+BenchmarkSelectPath-12       	 2556500	       495.9 ns/op	     176 B/op	       3 allocs/op
+BenchmarkSelectPath-12       	 2605129	       485.8 ns/op	     176 B/op	       3 allocs/op
+BenchmarkSelectPath-12       	 2392848	       489.3 ns/op	     176 B/op	       3 allocs/op
+BenchmarkSelectAllPath-12    	  404731	      2918 ns/op	    1744 B/op	      18 allocs/op
+BenchmarkSelectAllPath-12    	  418605	      3035 ns/op	    1744 B/op	      18 allocs/op
+BenchmarkSelectAllPath-12    	  414886	      3257 ns/op	    1744 B/op	      18 allocs/op
+BenchmarkFindFirstPath-12    	 4276771	       281.8 ns/op	     144 B/op	       1 allocs/op
+BenchmarkFindFirstPath-12    	 3805786	       309.0 ns/op	     144 B/op	       1 allocs/op
+BenchmarkFindFirstPath-12    	 4257352	       291.5 ns/op	     144 B/op	       1 allocs/op
+PASS
+ok  	github.com/halas77/goscrape/tests/benchmark	18.881s
