@@ -8,7 +8,7 @@ import (
 	"github.com/halas77/goscrape/engine"
 )
 
-// COMMAND = go test -bench=Educational ./tests -benchmem -count=3 > tests/benchmark/benchmark_results.txt
+// COMMAND = go test -bench=Path ./tests/benchmark -benchmem -count=3 > tests/benchmark/benchmark_results.txt
 
 // loadBenchmarkTag initializes a Tag from our static HTML file.
 func loadBenchmarkTag(b *testing.B) *engine.Tag {
@@ -25,8 +25,8 @@ func loadBenchmarkTag(b *testing.B) *engine.Tag {
 	return tag
 }
 
-// BenchmarkFindEducational measures the performance of the Find method.
-func BenchmarkFindEducational(b *testing.B) {
+// BenchmarkFindPath measures the performance of the Find method.
+func BenchmarkFindPath(b *testing.B) {
 	tag := loadBenchmarkTag(b)
 	name := "span"
 	attrs := []*engine.Attribute{{Key: "id", Value: "footer-id"}}
@@ -36,18 +36,8 @@ func BenchmarkFindEducational(b *testing.B) {
 	}
 }
 
-// BenchmarkSelectOneEducational measures the performance of SelectOne on a single Tag.
-func BenchmarkSelectOneEducational(b *testing.B) {
-	tag := loadBenchmarkTag(b)
-	selector := ".category-item"
-	b.ResetTimer()
-	for b.Loop() {
-		tag.SelectOne(selector)
-	}
-}
-
-// BenchmarkFindAllEducational measures the performance of retrieving many tags at once.
-func BenchmarkFindAllEducational(b *testing.B) {
+// BenchmarkFindAllPath measures the performance of retrieving many tags at once.
+func BenchmarkFindAllPath(b *testing.B) {
 	tag := loadBenchmarkTag(b)
 	name := "div"
 	attrs := []*engine.Attribute{{Key: "class", Value: "category-item"}}
@@ -57,12 +47,22 @@ func BenchmarkFindAllEducational(b *testing.B) {
 	}
 }
 
-// BenchmarkSelectEducational measures CSS selector performance.
-func BenchmarkSelectEducational(b *testing.B) {
+// BenchmarkSelectPath measures the performance of Select on a single Tag.
+func BenchmarkSelectPath(b *testing.B) {
 	tag := loadBenchmarkTag(b)
 	selector := ".category-item"
 	b.ResetTimer()
 	for b.Loop() {
 		tag.Select(selector)
+	}
+}
+
+// BenchmarkSelectAllPath measures CSS selector performance for retrieving many tags.
+func BenchmarkSelectAllPath(b *testing.B) {
+	tag := loadBenchmarkTag(b)
+	selector := ".category-item"
+	b.ResetTimer()
+	for b.Loop() {
+		tag.SelectAll(selector)
 	}
 }
