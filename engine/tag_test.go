@@ -178,7 +178,7 @@ func BenchmarkFindFirst(b *testing.B) {
 	params := []*Attribute{
 		{
 			Key:   "id",
-			Value: "footer-id",
+			Value: "header-id",
 		},
 		// {
 		// 	Key:   "class",
@@ -204,6 +204,6 @@ func BenchmarkSelect(b *testing.B) {
 
 	b.StartTimer()
 	for b.Loop() {
-		scrape.Select(selector)
+		scrape.QueryOne(selector)
 	}
 }
