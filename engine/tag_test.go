@@ -164,7 +164,7 @@ func BenchmarkSelectAll(b *testing.B) {
 	b.StartTimer()
 	for b.Loop() {
 		// scrape.Select(selector)
-		scrape.QueryAll(selector)
+		scrape.SelectAll(selector)
 	}
 }
 
@@ -204,6 +204,6 @@ func BenchmarkSelect(b *testing.B) {
 
 	b.StartTimer()
 	for b.Loop() {
-		scrape.QueryOne(selector)
+		scrape.SelectFirst(selector)
 	}
 }

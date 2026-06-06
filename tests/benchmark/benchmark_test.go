@@ -64,7 +64,7 @@ func BenchmarkSelectPath(b *testing.B) {
 	selector := ".category-item"
 	b.ResetTimer()
 	for b.Loop() {
-		tag.Select(selector)
+		tag.SelectFirst(selector)
 	}
 }
 

@@ -39,7 +39,7 @@ func requestTest() {
 	scrape, err := engine.LoadDocument(input)
 	// scrape, err := engine.InitDocument(input)
 
-	fmt.Println(scrape.FindFirst("main").Print())
+	fmt.Println(scrape.FindFirst("main").FindAll("div"))
 
 	if err != nil {
 		fmt.Println("Error parsing HTML:", err)
@@ -113,7 +113,7 @@ func stringTest() {
 	for i := range *electronics {
 		e := (*electronics)[i]
 		// Use a specific CSS selector instead of the extra params map
-		brand := e.Select("span.brand")
+		brand := e.SelectFirst("span.brand")
 		fmt.Printf("Electronic Item Brand: %s\n", brand.Print())
 	}
 
@@ -123,7 +123,7 @@ func stringTest() {
 	outOfStockItems := root.SelectAll("article")
 	for _, item := range *outOfStockItems {
 		if strings.Contains(item.Text(), "Out of Stock") {
-			model := item.Select(".model")
+			model := item.SelectFirst(".model")
 			fmt.Printf("Item Out of Stock: %s\n", model.Print())
 		}
 	}
@@ -263,7 +263,7 @@ func proxyTester() {
 		}
 
 		// callerIP := ipPattern.FindString(string(body))
-		fmt.Printf("[Req %d] ✅ Success! Server Response:\n%s\n", i, s.Select("#ip-test").Print())
+		fmt.Printf("[Req %d] ✅ Success! Server Response:\n%s\n", i, s.SelectFirst("#ip-test").Print())
 	}
 
 	fmt.Println("🏁 Test finished.")

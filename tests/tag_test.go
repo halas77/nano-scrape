@@ -237,7 +237,7 @@ func BenchmarkSelect(b *testing.B) {
 
 	b.StartTimer()
 	for b.Loop() {
-		scrape.Select(selector)
+		scrape.SelectFirst(selector)
 	}
 }
 
