@@ -128,11 +128,6 @@ func stringTest() {
 		}
 	}
 
-	fmt.Println("\n=== 4. Chained CSS Search ===")
-	brands := root.SelectAll("article[data-category='electronics']").SelectAll(".brand")
-	for _, b := range *brands {
-		fmt.Println("Brand in Electronics:", b.Print())
-	}
 }
 
 func exportDemo() {

@@ -104,20 +104,8 @@ func (t *Tag) SelectAll(selector string) *Tags {
 	return t.QueryAll(selector)
 }
 
-func (ts *Tags) SelectAll(selector string) *Tags {
-	var results Tags
-	for _, t := range *ts {
-		results = append(results, *t.SelectAll(selector)...)
-	}
-	return &results
-}
-
 func (t *Tag) Select(selector string) *Tag {
 	return t.QueryOne(selector)
-}
-
-func (ts *Tags) Select(selector string) *Tag {
-	return ts.SelectAll(selector).First()
 }
 
 func (t *Tag) Text() string {
