@@ -8,14 +8,14 @@ import (
 )
 
 func main() {
-	// requestTest()
-	stringTest()
-	exportDemo()
+	requestTest()
+	// stringTest()
+	// exportDemo()
 	// stringTest()
 
 	// proxyTester()
 
-	testFromPost()
+	// testFromPost()
 }
 
 func requestTest() {
@@ -246,12 +246,12 @@ func proxyTester() {
 
 	// rotator := engine.NewProxyRotator(publicProxies)
 	input := "http://127.0.0.1:8000/home"
-	request := engine.InitRequest()
+	request := engine.NewClient()
 
 	request.ProxyRotator(publicProxies...)
 	requestsCount := 4
 	for i := 1; i <= requestsCount; i++ {
-		body, err := request.Execute(input, "GET")
+		body, err := request.Execute("GET", input, nil)
 
 		if err != nil {
 			fmt.Printf("[Req %d] ❌ Failed: %v (The public proxy might be dead)\n", i, err)
@@ -276,10 +276,10 @@ func proxyTester() {
 
 func testFromPost() {
 	url := "http://127.0.0.1:8000/login"
-	req := engine.InitRequest()
+	req := engine.NewClient()
 
 	// Get login page with the same client used for POST so cookies/session are shared.
-	body, err := req.Execute(url, "GET")
+	body, err := req.Execute("GET", url, nil)
 	if err != nil {
 		fmt.Println("Error loading login page:", err)
 		return
@@ -317,7 +317,7 @@ func testFromPost() {
 		"password": "password123",
 	}
 
-	_, err = req.MakeFormPostRequest(url, "POST", payload)
+	_, err = req.SendForm("POST", url, payload)
 
 	if err != nil {
 		fmt.Println("Error making POST request:", err)
@@ -327,7 +327,7 @@ func testFromPost() {
 	fmt.Println("Login request sent successfully")
 	fmt.Println("Cookies:", req.CookiesFor(url))
 
-	body, err2 := req.Execute("http://127.0.0.1:8000/companies", "GET")
+	body, err2 := req.Execute("GET", "http://127.0.0.1:8000/companies", nil)
 	if err2 != nil {
 		fmt.Println("Error loading login page:", err2)
 		return

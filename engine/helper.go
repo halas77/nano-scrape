@@ -46,7 +46,7 @@ func InitDocument(input any) (*Tag, error) {
 }
 
 func LoadDocument(url string) (*Tag, error) {
-	resp, err := InitRequest().Execute(url, "GET")
+	resp, err := NewClient().Execute("GET", url, nil)
 
 	if err != nil {
 		return nil, err
