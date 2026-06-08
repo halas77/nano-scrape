@@ -8,14 +8,14 @@ import (
 )
 
 func main() {
-	requestTest()
+	// requestTest()
 	// stringTest()
 	// exportDemo()
 	// stringTest()
 
 	// proxyTester()
 
-	// testFromPost()
+	testFromPost()
 }
 
 func requestTest() {
@@ -279,7 +279,7 @@ func testFromPost() {
 	req := engine.NewClient()
 
 	// Get login page with the same client used for POST so cookies/session are shared.
-	body, err := req.Execute("GET", url, nil)
+	body, err := req.Execute("GET", url)
 	if err != nil {
 		fmt.Println("Error loading login page:", err)
 		return
@@ -327,7 +327,7 @@ func testFromPost() {
 	fmt.Println("Login request sent successfully")
 	fmt.Println("Cookies:", req.CookiesFor(url))
 
-	body, err2 := req.Execute("GET", "http://127.0.0.1:8000/companies", nil)
+	body, err2 := req.Execute("GET", "http://127.0.0.1:8000/companies")
 	if err2 != nil {
 		fmt.Println("Error loading login page:", err2)
 		return

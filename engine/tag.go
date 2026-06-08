@@ -66,6 +66,9 @@ func (t *Tag) QueryOne(selector string) *Tag {
 }
 
 func (t *Tag) Find(name string, attrs []*Attribute, cb TagCallback) {
+	if t == nil {
+		return
+	}
 
 	t.recurse = true
 	t.name = name
@@ -82,6 +85,10 @@ func (t *Tag) Find(name string, attrs []*Attribute, cb TagCallback) {
 
 func (t *Tag) FindAll(name string, attribute ...[]*Attribute) *Tags {
 
+	if t == nil {
+		return nil
+	}
+
 	var tags = &Tags{}
 	var attr []*Attribute
 	if len(attribute) > 0 {
@@ -96,6 +103,10 @@ func (t *Tag) FindAll(name string, attribute ...[]*Attribute) *Tags {
 }
 
 func (t *Tag) FindFirst(name string, attr ...[]*Attribute) *Tag {
+	if t == nil {
+		return nil
+	}
+
 	t.limit = 1
 	return t.FindAll(name, attr...).First()
 }

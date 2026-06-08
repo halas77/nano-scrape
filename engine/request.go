@@ -38,7 +38,11 @@ func NewClient(baseHeader ...http.Header) *Client {
 }
 
 // ProxyRotator assigns a custom transport to handle proxy rotations.
-func (c *Client) ProxyRotator(proxies ...string) {
+func (c *Client) ProxyRotator(proxies ...string) error {
+	if c == nil {
+		return fmt.Errorf("client instance is nil")
+	}
+
 	rotator := NewProxyRotator(proxies)
 	c.client.Transport = &http.Transport{
 		Proxy:               rotator.GetProxyFunc(),
@@ -46,9 +50,14 @@ func (c *Client) ProxyRotator(proxies ...string) {
 		IdleConnTimeout:     90 * time.Second,
 		TLSHandshakeTimeout: 10 * time.Second,
 	}
+	return nil
 }
 
 func (c *Client) Execute(method, targetURL string, body ...io.Reader) ([]byte, error) {
+	if c == nil {
+		return nil, fmt.Errorf("client instance is nil")
+	}
+
 	var reqBody io.Reader
 	if len(body) > 0 {
 		reqBody = body[0]
@@ -86,6 +95,10 @@ func (c *Client) Execute(method, targetURL string, body ...io.Reader) ([]byte, e
 // SendJSON automates marshaling structures into JSON payloads.
 // Accepts HTTP methods like http.MethodPost, http.MethodPut, or http.MethodPatch.
 func (c *Client) SendJSON(method, targetURL string, payload any) ([]byte, error) {
+	if c == nil {
+		return nil, fmt.Errorf("client instance is nil")
+	}
+
 	jsonValue, err := json.Marshal(payload)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal json: %w", err)
@@ -100,6 +113,10 @@ func (c *Client) SendJSON(method, targetURL string, payload any) ([]byte, error)
 // SendForm encodes payload maps into standard x-www-form-urlencoded payloads.
 // Accepts HTTP methods like http.MethodPost, http.MethodPut, or http.MethodPatch.
 func (c *Client) SendForm(method, targetURL string, payload map[string]string) ([]byte, error) {
+	if c == nil {
+		return nil, fmt.Errorf("client instance is nil")
+	}
+
 	formData := url.Values{}
 	for key, val := range payload {
 		formData.Set(key, val)
