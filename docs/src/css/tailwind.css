@@ -1,0 +1,113 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+	html {
+		scroll-behavior: smooth;
+	}
+
+	body {
+		@apply bg-slate-50 text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-100;
+	}
+}
+
+@layer components {
+	.theme-doc-markdown {
+		@apply leading-8 text-[1.04rem] text-slate-700 dark:text-slate-200;
+	}
+
+	.theme-doc-markdown > :first-child {
+		margin-top: 0;
+	}
+
+	.theme-doc-markdown > :last-child {
+		margin-bottom: 0;
+	}
+
+	.theme-doc-markdown h1 {
+		@apply mt-2 mb-6 text-4xl font-black tracking-tight text-slate-900 dark:text-white;
+	}
+
+	.theme-doc-markdown h2 {
+		@apply mt-14 mb-5 border-b border-slate-200 pb-2 text-3xl font-extrabold tracking-tight text-slate-900 dark:border-slate-700 dark:text-white;
+	}
+
+	.theme-doc-markdown h3 {
+		@apply mt-10 mb-4 text-2xl font-bold text-slate-900 dark:text-slate-100;
+	}
+
+	.theme-doc-markdown p {
+		@apply my-5;
+	}
+
+	.theme-doc-markdown ul,
+	.theme-doc-markdown ol {
+		@apply my-6 pl-7;
+	}
+
+	.theme-doc-markdown li {
+		@apply my-2.5;
+	}
+
+	.theme-doc-markdown li > p {
+		@apply my-2;
+	}
+
+	.theme-doc-markdown a {
+		@apply font-medium text-brand-600 underline decoration-brand-300 underline-offset-4 transition hover:text-brand-500 dark:text-brand-300 dark:decoration-brand-700 dark:hover:text-brand-200;
+	}
+
+	.theme-doc-markdown blockquote {
+		@apply my-7 rounded-xl border-l-4 border-brand-500 bg-brand-50 px-5 py-3 text-slate-700 shadow-sm dark:bg-slate-900 dark:text-slate-200;
+	}
+
+	.theme-doc-markdown hr {
+		@apply my-10 border-slate-200 dark:border-slate-700;
+	}
+
+	.theme-doc-markdown table {
+		@apply my-8 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900;
+	}
+
+	.theme-doc-markdown thead tr {
+		@apply bg-slate-100 dark:bg-slate-800;
+	}
+
+	.theme-doc-markdown th,
+	.theme-doc-markdown td {
+		@apply border-b border-slate-200 px-4 py-3 text-left dark:border-slate-700;
+	}
+
+	.theme-doc-markdown tr:last-child td {
+		@apply border-b-0;
+	}
+
+	.theme-doc-markdown pre {
+		@apply my-7 rounded-xl border border-slate-200 shadow-sm dark:border-slate-700;
+	}
+
+	.theme-doc-markdown code {
+		@apply rounded-md bg-slate-100 px-1.5 py-0.5 text-[0.92em] text-slate-800 dark:bg-slate-800 dark:text-slate-100;
+	}
+
+	.theme-doc-markdown pre code {
+		@apply bg-transparent p-0;
+	}
+
+	.theme-doc-markdown .admonition {
+		@apply my-7 rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900;
+	}
+
+	.theme-doc-markdown .admonition .admonitionHeading_Gvgb {
+		@apply text-sm font-bold tracking-wide;
+	}
+
+	.theme-doc-markdown img {
+		@apply my-6 rounded-xl border border-slate-200 shadow-sm dark:border-slate-700;
+	}
+
+	.pagination-nav__link {
+		@apply rounded-xl border border-slate-200 bg-white shadow-sm transition hover:border-brand-300 hover:shadow-md dark:border-slate-700 dark:bg-slate-900;
+	}
+}

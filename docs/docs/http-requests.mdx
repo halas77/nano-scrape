@@ -1,0 +1,81 @@
+---
+sidebar_position: 4
+---
+
+# HTTP Requests
+
+`nano scrape` includes a request layer designed for scraping workflows where request customization matters.
+
+Use it when you need realistic browser-like headers, stateful cookies, or rotating proxies.
+
+## Initialize
+
+```go
+req := engine.InitRequest()
+```
+
+Optionally pass custom headers:
+
+```go
+hdr := http.Header{}
+hdr.Set("Accept-Language", "en-US")
+hdr.Set("User-Agent", "Mozilla/5.0 (compatible; nano-scrape-bot/1.0)")
+req := engine.InitRequest(hdr)
+```
+
+## Execute requests
+
+```go
+body, err := req.Execute("https://example.com", "GET")
+if err != nil {
+  panic(err)
+}
+
+root, _ := engine.InitDocument(body)
+fmt.Println(root.SelectFirst("title").Text())
+```
+
+This pattern is useful when you want explicit control over both network and parsing stages.
+
+## JSON and form POST helpers
+
+```go
+payload := map[string]string{"query": "laptop"}
+res, err := req.MakeJSONPostRequest("https://example.com/search", "POST", payload)
+```
+
+```go
+payload := map[string]string{"email": "test@example.com"}
+res, err := req.MakeFormPostRequest("https://example.com/form", "POST", payload)
+```
+
+Choose JSON helpers for API-like endpoints and form helpers for classic web form flows.
+
+## Proxy rotation
+
+```go
+req.ProxyRotator(
+  "http://1.2.3.4:8080",
+  "http://5.6.7.8:8080",
+)
+```
+
+Each request uses the next proxy in round-robin order.
+
+This is useful for distributing request load and reducing block risk on high-volume jobs.
+
+## Cookies
+
+```go
+cookies := req.CookiesFor("https://example.com")
+for _, c := range cookies {
+  fmt.Println(c.Name, c.Value)
+}
+```
+
+## Best practices
+
+- Add backoff and retry logic around `Execute()` for unstable targets
+- Respect robots.txt and site terms where required
+- Keep request rates low and consistent
+- Track HTTP status codes and empty-body responses in logs

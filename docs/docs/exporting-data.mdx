@@ -1,0 +1,75 @@
+---
+sidebar_position: 5
+---
+
+# Exporting Data
+
+Exporting is where extraction turns into usable data.
+
+`nano scrape` supports both mapped exports (schema-first) and direct tag exports (raw-ish snapshot style).
+
+## Mapping selectors to fields
+
+Start with a clear output schema and map each field to a selector expression:
+
+```go
+products := root.SelectAll(".product-item")
+
+mapping := map[string]string{
+  "sku":   "@data-sku",
+  "name":  "h3.name",
+  "price": "span.price",
+  "url":   "a.link @href",
+}
+
+mapped := products.Map(mapping)
+```
+
+This keeps your output stable even when source HTML changes slightly.
+
+## Export mapped data
+
+```go
+jsonBytes, _ := engine.ExportJSON(mapped)
+csvData, _ := engine.ExportCSV(mapped)
+mdTable, _ := engine.ExportMD(mapped)
+```
+
+Use:
+
+- **JSON** for APIs and data pipelines
+- **CSV** for spreadsheets and BI tools
+- **Markdown** for quick reports in docs and repos
+
+## Write mapped data to files
+
+```go
+_ = engine.WriteMappedJSON("products.json", mapped)
+_ = engine.WriteMappedCSV("products.csv", mapped)
+_ = engine.WriteMappedMD("products.md", mapped)
+```
+
+## Export `Tags` directly
+
+If you want direct exports from selected nodes without explicit schema mapping:
+
+```go
+cards := root.SelectAll(".product-item")
+
+j, _ := cards.ToJSON()
+c, _ := cards.ToCSV()
+m, _ := cards.ToMD()
+
+_ = cards.WriteJSON("tags.json")
+_ = cards.WriteCSV("tags.csv")
+_ = cards.WriteMD("tags.md")
+```
+
+## Recommended pattern
+
+For production jobs, prefer:
+
+1. `SelectAll()` target rows
+2. `Map()` to a strict schema
+3. `ExportJSON()` for primary output
+4. `WriteMappedCSV()` for analyst-friendly secondary output
