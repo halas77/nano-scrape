@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -8,7 +9,9 @@ import (
 )
 
 func main() {
-	requestTest()
+	checkIP()
+
+	// requestTest()
 	// stringTest()
 	// exportDemo()
 	// stringTest()
@@ -340,4 +343,47 @@ func testFromPost() {
 	}
 
 	fmt.Println(scrape.FindAll("tr").Print())
+}
+
+type HttpBinResponse struct {
+	Origin string `json:"origin"` // This holds the IP address seen by the server
+}
+
+func checkIP() {
+	publicProxies := []string{
+		"https://37.49.224.15:3128",
+		"http://130.110.250.13:1111",
+		"http://176.105.220.74:3129",
+	}
+	input := "https://httpbin.org/get"
+
+	// Assuming 'engine' is your custom internal package
+	request := engine.NewClient()
+	request.ProxyRotator(publicProxies...)
+
+	requestsCount := 4
+	for i := 0; i <= requestsCount; i++ {
+		body, err := request.Execute("GET", input, nil) // body is []byte
+
+		if err != nil {
+			// Changed 'return' to 'continue' so one dead proxy doesn't kill your entire loop
+			fmt.Printf("[Req %d] ❌ Failed: %v (The public proxy might be dead)\n", i, err)
+			continue
+		}
+
+		// 2. Create an instance of your target struct
+		var target HttpBinResponse
+
+		// 3. Unmarshal the []byte body into the struct pointer
+		err = json.Unmarshal(body, &target)
+		if err != nil {
+			fmt.Printf("[Req %d] ❌ Error decoding JSON: %v\n", i, err)
+			continue
+		}
+
+		// 4. Extract the client IP from the struct and display it
+		fmt.Printf("[Req %d] ✅ Success! Server detected your proxy IP as: %s\n", i, target.Origin)
+	}
+
+	fmt.Println("🏁 Test finished.")
 }
