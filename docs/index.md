@@ -1,25 +1,23 @@
 ---
-# https://vitepress.dev/reference/default-theme-home-page
+title: "Nano Scrape"
 layout: home
-
 hero:
-  name: "nano scrape"
-  text: "Scrape at the speed of Go!"
-  tagline: My great project tagline
+  name: "Nano Scrape"
+  text: "High-performance web scraping for Go"
+  tagline: "A lightweight, fast Go library for extracting data from the web"
+  heroImage: "/hero_image.png"
   actions:
     - theme: brand
-      text: Markdown Examples
-      link: /markdown-examples
+      text: "Guide"
+      link: "/guide/getting-started"
     - theme: alt
-      text: API Examples
-      link: /api-examples
-
+      text: "API Reference"
+      link: "/api/reference"
 features:
-  - title: Feature A
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature B
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature C
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+  - title: "Fast & Efficient"
+    details: "Leverages Go's concurrency to scrape pages at high speed."
+  - title: "Simple API"
+    details: "Intuitive selectors similar to CSS for quick data extraction."
+  - title: "Export Ready"
+    details: "Built‑in support for JSON, CSV, and Markdown exports."
 ---
-

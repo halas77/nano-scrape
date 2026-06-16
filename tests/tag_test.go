@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/halas77/goscrape/engine"
+	"github.com/halas77/nano-scrape/engine"
 	"golang.org/x/net/html"
 )
 

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/halas77/goscrape/engine"
+	"github.com/halas77/nano-scrape/engine"
 )
 
 func main() {

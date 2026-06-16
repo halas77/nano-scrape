@@ -124,15 +124,15 @@ func TestFlexMatch(t *testing.T) {
 	}{
 		{
 			name:          "Case insensitive match",
-			main:          "GoScrape is Cool",
+			main:          "nano-scrape is Cool",
 			target:        "cool",
 			caseSensitive: false,
 			expected:      true,
 		},
 		{
 			name:          "Case sensitive fail",
-			main:          "GoScrape",
-			target:        "goscrape",
+			main:          "nano-scrape",
+			target:        "nano-scrape",
 			caseSensitive: true,
 			expected:      false,
 		},

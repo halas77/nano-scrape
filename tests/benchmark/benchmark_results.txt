@@ -1,6 +1,6 @@
 goos: linux
 goarch: amd64
-pkg: github.com/halas77/goscrape/tests/benchmark
+pkg: github.com/halas77/nano-scrape/tests/benchmark
 cpu: 12th Gen Intel(R) Core(TM) i5-12500
 BenchmarkFindPath-12         	  999273	      1205 ns/op	       0 B/op	       0 allocs/op
 BenchmarkFindPath-12         	  722078	      1550 ns/op	       0 B/op	       0 allocs/op
@@ -21,4 +21,4 @@ BenchmarkQueryOnePath-12     	 1812866	       564.6 ns/op	     176 B/op	       3
 BenchmarkQueryOnePath-12     	 2760304	       444.1 ns/op	     176 B/op	       3 allocs/op
 BenchmarkQueryOnePath-12     	 2242656	       507.0 ns/op	     176 B/op	       3 allocs/op
 PASS
-ok  	github.com/halas77/goscrape/tests/benchmark	22.343s
+ok  	github.com/halas77/nano-scrape/tests/benchmark	22.343s
