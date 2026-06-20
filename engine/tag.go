@@ -96,8 +96,11 @@ func (t *Tag) FindAll(name string, attribute ...[]*Attribute) *Tags {
 }
 
 func (t *Tag) FindFirst(name string, attr ...[]*Attribute) *Tag {
+	var originalLimit uint8 = t.limit
 	t.limit = 1
-	return t.FindAll(name, attr...).First()
+	tag := t.FindAll(name, attr...).First()
+	t.limit = originalLimit
+	return tag
 }
 
 func (t *Tag) Text() string {

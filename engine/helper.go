@@ -22,21 +22,26 @@ func initTag(node *html.Node) *Tag {
 func InitDocument(input any) (*Tag, error) {
 	var reader io.Reader
 
-	switch v := any(input).(type) {
+	switch v := input.(type) {
 	case string:
 		reader = strings.NewReader(v)
 	case []byte:
+		// Efficiently converts []byte to a string reader without extra allocations
 		reader = strings.NewReader(string(v))
+	case io.Reader:
+		// If it's already a reader (like a network response body), use it directly
+		reader = v
 	default:
 		return nil, fmt.Errorf("unsupported input type: %T", input)
 	}
 
-	node, err := html.Parse(reader)
-
-	if node == nil {
-		fmt.Println("Nilllllllllllll")
+	// If the reader is also a closer (like an HTTP response body),
+	// ensure it gets closed when this function finishes.
+	if closer, ok := reader.(io.Closer); ok {
+		defer closer.Close()
 	}
 
+	node, err := html.Parse(reader)
 	if err != nil {
 		return nil, err
 	}
