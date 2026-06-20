@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/halas77/goscrape/engine"
+	"github.com/halas77/nano-scrape/engine"
 )
 
 // COMMAND = go test -bench=Path ./tests/benchmark -benchmem -count=3 > tests/benchmark/benchmark_results.txt
@@ -64,7 +64,7 @@ func BenchmarkSelectPath(b *testing.B) {
 	selector := ".category-item"
 	b.ResetTimer()
 	for b.Loop() {
-		tag.Select(selector)
+		tag.SelectFirst(selector)
 	}
 }
 
