@@ -23,6 +23,7 @@ export default defineConfig({
             text: "Navigation & Selection",
             link: "/guide/navigation-selection",
           },
+          { text: "CSS Selection", link: "/guide/css-traversal" },
           { text: "Mapping & Exporting", link: "/guide/mapping-exporting" },
         ],
       },
