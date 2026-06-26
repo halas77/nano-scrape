@@ -39,7 +39,7 @@ func requestTest() {
 	</article>
 	`
 	scrape, err := engine.InitDocument(input)
-	fmt.Println(scrape.FindAll("div").Print())
+	fmt.Println(scrape.FindFirst("div").Text())
 
 	// fmt.Println(scrape)
 
