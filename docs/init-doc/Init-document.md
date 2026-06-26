@@ -1,23 +1,21 @@
 # Init Document
 
----
-
 ## Tag
 
 `Tag` represents a single HTML element parsed from a document or webpage. You can use its public fields to inspect the element's properties.
 
 ```go
 type Tag struct {
-    Name  string           
-    Attrs []html.Attribute 
-    Class string           
-    Id    string       
+    Name  string
+    Attrs []html.Attribute
+    Class string
+    Id    string
 }
 ```
 
-## 🛠 Functions
+## Functions
 
-### InitDocument
+### `InitDocument`
 
 ```go
 func InitDocument(input any) (*Tag, error)
@@ -28,7 +26,7 @@ Converts local HTML data into a queryable `Tag` structure.
 - **What it takes:** A `string` of raw HTML, a `[]byte` slice, or any standard Go reading stream (`io.Reader`).
 - **What it returns:** The root HTML `Tag` of the document, or an error if the input cannot be processed.
 
-### LoadDocument
+### `LoadDocument`
 
 ```go
 func LoadDocument(url string) (*Tag, error)
@@ -40,7 +38,7 @@ Downloads an HTML document from the internet and prepares it for scraping.
 - **What it returns:** The root HTML `Tag` of the downloaded webpage, or an error if the website is unreachable.
 - **Note:** This function completely manages the web connection for you. You do not need to worry about closing network streams or handling resource leaks.
 
-#### 🚀 Usage Example
+#### `Usage Example`
 
 ```go
 package main
