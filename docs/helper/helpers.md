@@ -1,6 +1,10 @@
-# Helper’s
+# Helper Functions
 
-### `Print`
+---
+
+These are helper methods on the `*Tag` struct.
+
+## `Print`
 
 ```go
 func (tag *Tag) Print(depth ...uint16) string
@@ -65,7 +69,7 @@ func main() {
 </div>
 ```
 
-#### `func (Tags) Print`
+## `func (Tags) Print`
 
 ```go
 func (ts Tags) Print(depth ...uint16) string
