@@ -1,8 +1,10 @@
 # Attribute Traversal
 
-## Functions
+## Attribute Selection Functions
 
-### `Find`
+There are three primary methods on the `*Tag` struct for Attribute selection.
+
+### 1. `Find`
 
 ```go
 func (t *Tag) Find(name string, attrs []*Attribute, cb TagCallback)
@@ -25,7 +27,7 @@ page.Find("div", nil, func(matchedTag *engine.Tag) {
 })
 ```
 
-### `FindAll`
+### 2. `FindAll`
 
 ```go
 func (t *Tag) FindAll(name string, attribute ...[]*Attribute) *Tags
@@ -46,7 +48,7 @@ allLinks := page.FindAll("a")
 fmt.Printf("Found %d total links on the page.\n", len(*allLinks))
 ```
 
-### `FindFirst`
+### 3. `FindFirst`
 
 ```go
 func (t *Tag) FindFirst(name string, attr ...[]*Attribute) *Tag
@@ -112,7 +114,7 @@ func main() {
 }
 ```
 
-### `Find` / `FindAll` with Text Filtering
+### `Find` `FindFirst` / `FindAll` with Text Filtering
 
 When you pass an `Attribute` with the special key `"string"`, the search engine start inspecting the direct plain text inside the tag itself.
 
@@ -205,3 +207,13 @@ func main() {
 - **Tag Name:** Must be a `<div>`.
 - **Criteria 1 (`class`):** Must exactly equal `"details"`.
 - **Criteria 2 (`string`):** Must directly contain the text block `"World"` (ignoring nested elements).
+
+## Important Tips
+
+> [!TIP]
+> **Use Early Exits for Performance**
+> When you only need the first match (e.g. searching for a title, a main container, or single attribute value), prefer `FindFirst`. Because it avoids traversing the rest of the HTML tree after finding the match, it is much faster and uses fewer CPU allocations.
+
+> [!IMPORTANT]
+> **Always Check for nil**
+> If a selector does not find any match, `FindFirst` returns `nil`. Always check that the returned `*Tag` is not `nil` before calling methods like `.Text()` to avoid runtime panics.
