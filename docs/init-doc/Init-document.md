@@ -13,9 +13,11 @@ type Tag struct {
 }
 ```
 
-## Functions
+## Core Functions
 
-### `InitDocument`
+There are two primary methods on the `*Tag` struct for initiating scraping.
+
+### 1. `InitDocument`
 
 ```go
 func InitDocument(input any) (*Tag, error)
@@ -26,7 +28,7 @@ Converts local HTML data into a queryable `Tag` structure.
 - **What it takes:** A `string` of raw HTML, a `[]byte` slice, or any standard Go reading stream (`io.Reader`).
 - **What it returns:** The root HTML `Tag` of the document, or an error if the input cannot be processed.
 
-### `LoadDocument`
+### 2. `LoadDocument`
 
 ```go
 func LoadDocument(url string) (*Tag, error)
