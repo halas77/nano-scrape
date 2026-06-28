@@ -130,6 +130,12 @@
 
       <main class="main-panel">
         <h1>Inventory Dashboard</h1>
+
+        <p>
+          Your current proxy/caller IP is:
+          <span id="caller-ip">Loading...</span>
+        </p>
+
         <p id="dynamic-msg">Connecting to database...</p>
 
         <div id="inventory-container">
@@ -146,6 +152,17 @@
 
     <script>
       // Simulate JavaScript loading more items into the list
+      fetch("https://api.ipify.org?format=json")
+        .then((response) => response.json())
+        .then((data) => {
+          // Put the IP address directly inside the span tag
+          document.getElementById("caller-ip").innerText = data.ip;
+        })
+        .catch((error) => {
+          document.getElementById("caller-ip").innerText = "Error loading IP";
+          console.error("Error:", error);
+        });
+
       setTimeout(() => {
         document.getElementById("dynamic-msg").innerHTML =
           "Showing <strong>verified</strong> stock items.";

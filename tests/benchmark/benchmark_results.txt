@@ -1,0 +1,24 @@
+goos: linux
+goarch: amd64
+pkg: github.com/halas77/nano-scrape/tests/benchmark
+cpu: 12th Gen Intel(R) Core(TM) i5-12500
+BenchmarkFindPath-12         	  999273	      1205 ns/op	       0 B/op	       0 allocs/op
+BenchmarkFindPath-12         	  722078	      1550 ns/op	       0 B/op	       0 allocs/op
+BenchmarkFindPath-12         	  997112	      1211 ns/op	       0 B/op	       0 allocs/op
+BenchmarkFindAllPath-12      	  623338	      2378 ns/op	    1712 B/op	      16 allocs/op
+BenchmarkFindAllPath-12      	  577776	      1942 ns/op	    1712 B/op	      16 allocs/op
+BenchmarkFindAllPath-12      	  430892	      2476 ns/op	    1712 B/op	      16 allocs/op
+BenchmarkSelectPath-12       	 2512928	       549.2 ns/op	     176 B/op	       3 allocs/op
+BenchmarkSelectPath-12       	 2452832	       494.4 ns/op	     176 B/op	       3 allocs/op
+BenchmarkSelectPath-12       	 2711275	       440.1 ns/op	     176 B/op	       3 allocs/op
+BenchmarkSelectAllPath-12    	  414750	      3342 ns/op	    1744 B/op	      18 allocs/op
+BenchmarkSelectAllPath-12    	  362755	      3251 ns/op	    1744 B/op	      18 allocs/op
+BenchmarkSelectAllPath-12    	  369949	      3434 ns/op	    1744 B/op	      18 allocs/op
+BenchmarkFindFirstPath-12    	 4217185	       378.0 ns/op	     144 B/op	       1 allocs/op
+BenchmarkFindFirstPath-12    	 4252392	       298.7 ns/op	     144 B/op	       1 allocs/op
+BenchmarkFindFirstPath-12    	 4135736	       297.4 ns/op	     144 B/op	       1 allocs/op
+BenchmarkQueryOnePath-12     	 1812866	       564.6 ns/op	     176 B/op	       3 allocs/op
+BenchmarkQueryOnePath-12     	 2760304	       444.1 ns/op	     176 B/op	       3 allocs/op
+BenchmarkQueryOnePath-12     	 2242656	       507.0 ns/op	     176 B/op	       3 allocs/op
+PASS
+ok  	github.com/halas77/nano-scrape/tests/benchmark	22.343s

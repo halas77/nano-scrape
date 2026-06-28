@@ -8,6 +8,24 @@ import (
 	"golang.org/x/net/html"
 )
 
+func (t *Tag) getNodeStrings(n *html.Node) string {
+	nodeStrings := []string{}
+
+	// We force recursion here to ensure we get all nested text
+	originalRecurse := t.recurse
+	t.recurse = true
+	defer func() { t.recurse = originalRecurse }()
+
+	t.traverse(n, func(c *html.Node) bool {
+		if c.Type == html.TextNode {
+			nodeStrings = append(nodeStrings, c.Data)
+		}
+		return false
+	})
+
+	return strings.Join(nodeStrings, "")
+}
+
 func getNodeStrings(t Tag) string {
 	nodeStrings := []string{}
 
@@ -112,13 +130,13 @@ func flexMatch(main string, target string, caseSensitive bool) bool {
 	return re.MatchString(main)
 }
 
-func (tag Tag) Print(depth ...uint16) string {
+func (tag *Tag) Print(depth ...uint16) string {
 	var d uint16 = 0
 	if len(depth) > 0 {
 		d = (depth[0])
 	}
 
-	if tag.root == nil {
+	if tag == nil || tag.root == nil {
 		return "Empty"
 	}
 

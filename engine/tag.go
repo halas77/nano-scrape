@@ -8,8 +8,12 @@ import (
 )
 
 type Tag struct {
-	root  *html.Node
-	limit uint8
+	root    *html.Node
+	limit   uint8
+	attrs   []*Attribute
+	recurse bool
+	name    string
+	maps    *map[string]string
 
 	Name  string
 	Attrs []html.Attribute
@@ -17,103 +21,88 @@ type Tag struct {
 	Id    string
 }
 
-type Tags []Tag
-type TagCallback func(Tag)
+type Tags []*Tag
+type TagCallback func(*Tag)
 
-func (t Tag) Find(name string, params map[string]any, cb TagCallback) {
-	var p map[string]any = make(map[string]any)
+func (ts *Tags) First() *Tag {
 
-	if params != nil {
-		p = params
+	if ts == nil || len(*ts) == 0 {
+		return nil
 	}
-	p["_name_"] = name
+	return (*ts)[0]
+}
 
-	selectionParams := SelectionParams{params: p}
-	traverse(t, t.limit, true, func(t Tag) bool {
-		isMatch := nameSelector(t, selectionParams.params)
+func (t *Tag) Select(selector string, f func(*Tag)) {
+	sel, err := cascadia.Parse(selector)
+	if err != nil {
+		return
+	}
+
+	t.recurse = true
+
+	t.traverse(t.root, func(n *html.Node) bool {
+		hasMatch := sel.Match(n)
+		if hasMatch {
+			f(&Tag{root: n, Name: n.Data, Attrs: n.Attr})
+		}
+
+		return hasMatch
+	})
+}
+
+func (t *Tag) SelectAll(selector string) *Tags {
+
+	var tags = &Tags{}
+	t.Select(selector, func(t *Tag) {
+		*tags = append(*tags, t)
+	})
+
+	return tags
+}
+
+func (t *Tag) SelectFirst(selector string) *Tag {
+	t.limit = 1
+	return t.SelectAll(selector).First()
+}
+
+func (t *Tag) Find(name string, attrs []*Attribute, cb TagCallback) {
+
+	t.recurse = true
+	t.name = name
+	t.attrs = attrs
+
+	t.traverse(t.root, func(node *html.Node) bool {
+		isMatch := t.nameSelector(node)
 		if isMatch {
-			cb(t)
+			cb(&Tag{root: node, Name: node.Data, Attrs: node.Attr})
 		}
 		return isMatch
 	})
 }
 
-func (t Tag) FindAll(name string, params ...map[string]any) Tags {
-	var tags = Tags{}
-	t.Find(name, params[0], func(t Tag) {
-		tags = append(tags, t)
+func (t *Tag) FindAll(name string, attribute ...[]*Attribute) *Tags {
+
+	var tags = &Tags{}
+	var attr []*Attribute
+	if len(attribute) > 0 {
+		attr = attribute[0]
+	}
+
+	t.Find(name, attr, func(t *Tag) {
+		*tags = append(*tags, t)
 	})
 
 	return tags
 }
 
-func (t Tag) FindFirst(name string, params ...map[string]any) Tag {
-
+func (t *Tag) FindFirst(name string, attr ...[]*Attribute) *Tag {
+	var originalLimit uint8 = t.limit
 	t.limit = 1
-	var tags Tags = t.FindAll(name, params...)
-
-	if len(tags) == 0 {
-		return Tag{}
-	}
-	return tags[0]
+	tag := t.FindAll(name, attr...).First()
+	t.limit = originalLimit
+	return tag
 }
 
-func (t Tag) Select(selector string, params ...map[string]any) Tags {
-	sel, err := cascadia.Parse(selector)
-	if err != nil {
-		return Tags{}
-	}
-
-	matches := cascadia.QueryAll(t.root, sel)
-	var tags = Tags{}
-
-	var p map[string]any
-	if len(params) > 0 {
-		p = params[0]
-	}
-
-	for _, n := range matches {
-		if p != nil {
-			if !hasIntersection(p, n.Attr, false) {
-				continue
-			}
-			if target, ok := p["string"]; ok {
-				str := getNodeStrings(t)
-				if targetStr, ok := target.(string); ok {
-					if !flexMatch(str, targetStr, false) {
-						continue
-					}
-				}
-			}
-		}
-		tags = append(tags, Tag{root: n, Name: n.Data, Attrs: n.Attr})
-	}
-	return tags
-}
-
-func (t Tag) FindOne(selector string, params ...map[string]any) Tag {
-	return t.Select(selector, params...).First()
-}
-
-func (t Tag) Text() string {
-	return strings.TrimSpace(getNodeStrings(t))
-}
-
-func (ts Tags) Find(selector string, params ...map[string]any) Tags {
-	var results Tags
-	for _, t := range ts {
-		results = append(results, t.Select(selector, params...)...)
-	}
-	return results
-}
-
-func (ts Tags) First() Tag {
-	if len(ts) == 0 {
-		return Tag{}
-	}
-	return ts[0]
-}
-
-func (ts Tags) FindOne(selector string, params ...map[string]any) Tag {
-	return ts.Find(selector, params...).First()
+func (t *Tag) Text() string {
+	return strings.TrimSpace(t.getNodeStrings(t.root))
 }
