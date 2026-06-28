@@ -8,14 +8,14 @@ This reference lists the public types and functions exported by the **Nano Scrap
 
 ## Types
 
-- `engine.Request`
-  - Fields: `Header http.Header`, `client *http.Client`
+- `engine.Client`
+  - Fields: `Header http.Header`
   - Methods:
-    - `InitRequest(header ...http.Header) *Request`
-    - `ProxyRotator(proxies ...string)` – enable round‑robin proxy rotation.
-    - `Execute(url, method string, body ...io.Reader) ([]byte, error)` – perform HTTP request.
-    - `MakeJSONPostRequest(url, method string, payload map[string]string) ([]byte, error)`
-    - `MakeFormPostRequest(url, method string, payload map[string]string) ([]byte, error)`
+    - `NewClient(baseHeader ...http.Header) *Client`
+    - `ProxyRotator(proxies ...string)` – enable round-robin proxy rotation.
+    - `Execute(method, targetURL string, body ...io.Reader) (io.Reader, error)` – perform HTTP request.
+    - `SendJSON(method, targetURL string, payload any) (io.Reader, error)` – transmit structured data as JSON.
+    - `SendForm(method, targetURL string, payload map[string]string) (io.Reader, error)` – submit x-www-form-urlencoded data.
     - `CookiesFor(rawURL string) []*http.Cookie`
 - `engine.Tag`
   - Methods for DOM traversal and selection:
