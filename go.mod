@@ -1,4 +1,4 @@
-module github.com/halas77/goscrape
+module github.com/halas77/nano-scrape
 
 go 1.25.6
 

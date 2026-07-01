@@ -32,7 +32,7 @@ func (ts *Tags) First() *Tag {
 	return (*ts)[0]
 }
 
-func (t *Tag) Query(selector string, f func(*Tag)) {
+func (t *Tag) Select(selector string, f func(*Tag)) {
 	sel, err := cascadia.Parse(selector)
 	if err != nil {
 		return
@@ -50,19 +50,19 @@ func (t *Tag) Query(selector string, f func(*Tag)) {
 	})
 }
 
-func (t *Tag) QueryAll(selector string) *Tags {
+func (t *Tag) SelectAll(selector string) *Tags {
 
 	var tags = &Tags{}
-	t.Query(selector, func(t *Tag) {
+	t.Select(selector, func(t *Tag) {
 		*tags = append(*tags, t)
 	})
 
 	return tags
 }
 
-func (t *Tag) QueryOne(selector string) *Tag {
+func (t *Tag) SelectFirst(selector string) *Tag {
 	t.limit = 1
-	return t.QueryAll(selector).First()
+	return t.SelectAll(selector).First()
 }
 
 func (t *Tag) Find(name string, attrs []*Attribute, cb TagCallback) {
@@ -109,26 +109,6 @@ func (t *Tag) FindFirst(name string, attr ...[]*Attribute) *Tag {
 
 	t.limit = 1
 	return t.FindAll(name, attr...).First()
-}
-
-func (t *Tag) SelectAll(selector string) *Tags {
-	return t.QueryAll(selector)
-}
-
-func (ts *Tags) SelectAll(selector string) *Tags {
-	var results Tags
-	for _, t := range *ts {
-		results = append(results, *t.SelectAll(selector)...)
-	}
-	return &results
-}
-
-func (t *Tag) Select(selector string) *Tag {
-	return t.QueryOne(selector)
-}
-
-func (ts *Tags) Select(selector string) *Tag {
-	return ts.SelectAll(selector).First()
 }
 
 func (t *Tag) Text() string {

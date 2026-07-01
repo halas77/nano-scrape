@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/halas77/goscrape/engine"
+	"github.com/halas77/nano-scrape/engine"
 	"golang.org/x/net/html"
 )
 
@@ -237,7 +237,7 @@ func BenchmarkSelect(b *testing.B) {
 
 	b.StartTimer()
 	for b.Loop() {
-		scrape.Select(selector)
+		scrape.SelectFirst(selector)
 	}
 }
 
