@@ -53,11 +53,7 @@ func (c *Client) ProxyRotator(proxies ...string) error {
 	return nil
 }
 
-func (c *Client) Execute(method, targetURL string, body ...io.Reader) ([]byte, error) {
-	if c == nil {
-		return nil, fmt.Errorf("client instance is nil")
-	}
-
+func (c *Client) Execute(method, targetURL string, body ...io.Reader) (io.Reader, error) {
 	var reqBody io.Reader
 	if len(body) > 0 {
 		reqBody = body[0]
@@ -84,21 +80,17 @@ func (c *Client) Execute(method, targetURL string, body ...io.Reader) ([]byte, e
 		return nil, fmt.Errorf("server returned bad status: %d", resp.StatusCode)
 	}
 
-	bodyBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %w", err)
+	buf := new(bytes.Buffer)
+	if _, err := io.Copy(buf, resp.Body); err != nil {
+		return nil, err
 	}
 
-	return bodyBytes, nil
+	return buf, nil
 }
 
 // SendJSON automates marshaling structures into JSON payloads.
 // Accepts HTTP methods like http.MethodPost, http.MethodPut, or http.MethodPatch.
-func (c *Client) SendJSON(method, targetURL string, payload any) ([]byte, error) {
-	if c == nil {
-		return nil, fmt.Errorf("client instance is nil")
-	}
-
+func (c *Client) SendJSON(method, targetURL string, payload any) (io.Reader, error) {
 	jsonValue, err := json.Marshal(payload)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal json: %w", err)
@@ -112,11 +104,7 @@ func (c *Client) SendJSON(method, targetURL string, payload any) ([]byte, error)
 
 // SendForm encodes payload maps into standard x-www-form-urlencoded payloads.
 // Accepts HTTP methods like http.MethodPost, http.MethodPut, or http.MethodPatch.
-func (c *Client) SendForm(method, targetURL string, payload map[string]string) ([]byte, error) {
-	if c == nil {
-		return nil, fmt.Errorf("client instance is nil")
-	}
-
+func (c *Client) SendForm(method, targetURL string, payload map[string]string) (io.Reader, error) {
 	formData := url.Values{}
 	for key, val := range payload {
 		formData.Set(key, val)
@@ -166,7 +154,7 @@ func setDefaultHeader(h http.Header, key, value string) {
 	}
 }
 
-func (c *Client) executeWithModifier(targetURL, method string, body io.Reader, modifyHeaders func(http.Header)) ([]byte, error) {
+func (c *Client) executeWithModifier(targetURL, method string, body io.Reader, modifyHeaders func(http.Header)) (io.Reader, error) {
 	oldHeaders := c.Header.Clone()
 	modifyHeaders(c.Header)
 	defer func() { c.Header = oldHeaders }()

@@ -11,6 +11,9 @@ hero:
       text: "Guide"
       link: "/guide/getting-started"
     - theme: alt
+      text: "Quick Start"
+      link: "/init-doc/init-document"
+    - theme: alt
       text: "API Reference"
       link: "/api/reference"
 features:

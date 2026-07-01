@@ -15,15 +15,16 @@ export default defineConfig({
 
     sidebar: [
       {
-        text: "Guides",
+        text: "Guides & Features",
         items: [
           { text: "Getting Started", link: "/guide/getting-started" },
-          { text: "Request Client", link: "/guide/request-client" },
-          {
-            text: "Navigation & Selection",
-            link: "/guide/navigation-selection",
-          },
-          { text: "Mapping & Exporting", link: "/guide/mapping-exporting" },
+          { text: "Document Initialization", link: "/init-doc/init-document" },
+          { text: "Request Client", link: "/requests/request" },
+          { text: "Proxy Rotation", link: "/requests/proxies" },
+          { text: "CSS Selection", link: "/traversals/css-traversal" },
+          { text: "Attribute Selection", link: "/traversals/attribute-traversal" },
+          { text: "Data Exporting & Mapping", link: "/export/exporting" },
+          { text: "Formatting & Print Helpers", link: "/helper/helpers" },
         ],
       },
       {

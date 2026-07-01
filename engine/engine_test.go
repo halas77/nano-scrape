@@ -132,7 +132,7 @@ func TestFlexMatch(t *testing.T) {
 		{
 			name:          "Case sensitive fail",
 			main:          "nano-scrape",
-			target:        "nano-scrape",
+			target:        "Nano-Scrape",
 			caseSensitive: true,
 			expected:      false,
 		},
