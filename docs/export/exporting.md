@@ -2,8 +2,6 @@
 
 The `nano-scrape` library provides built-in tools to export your scraped HTML elements into structured data formats, specifically **JSON**, **CSV**, and **Markdown**. You can either export raw parsed tags directly or map them into custom key-value pairs before serialization.
 
----
-
 ## TagExport
 
 `TagExport` is a cleanly structured representation of a `Tag` designed for direct serialization. It filters out internal DOM references and focuses entirely on the key fields of the element.
@@ -17,8 +15,6 @@ type TagExport struct {
 	Attributes map[string]string `json:"attributes,omitempty"`
 }
 ```
-
----
 
 ## Raw Export Functions
 
@@ -35,8 +31,6 @@ Converts a single parsed `Tag` into a serializable `TagExport` structure.
 - **What it takes:** Nothing (called on a `Tag` instance).
 - **What it returns:** A `TagExport` struct with populated name, inner text, class, id, and attributes.
 
----
-
 ### `Export` (Tag Collection)
 
 ```go
@@ -48,8 +42,6 @@ Converts a collection of tags (`Tags`) into a slice of serializable `TagExport` 
 - **What it takes:** Nothing (called on a `*Tags` collection).
 - **What it returns:** A slice of `TagExport` structs.
 
----
-
 ### `ToJSON`
 
 ```go
@@ -60,8 +52,6 @@ Converts the tags collection directly into a pretty-printed JSON byte slice.
 
 - **What it takes:** Nothing.
 - **What it returns:** A pretty-printed JSON byte slice (`[]byte`) and an `error` if serialization fails.
-
----
 
 ### `ToCSV`
 
@@ -75,8 +65,6 @@ Converts the tags collection directly into a CSV string.
 - **What it returns:** A CSV string and an `error`.
 - **Note:** The CSV columns are `name`, `text`, `class`, `id`, and `attributes`. Semicolons are used to separate key-value attribute pairs (e.g. `href=http://example.com; target=_blank`).
 
----
-
 ### `ToMD`
 
 ```go
@@ -88,8 +76,6 @@ Converts the tags collection directly into a Markdown table representation.
 - **What it takes:** Nothing.
 - **What it returns:** A Markdown table string and an `error`.
 - **Note:** Columns match the CSV format. Any internal pipe characters (`|`) are escaped, and newline characters are removed to prevent breaking the Markdown table layout.
-
----
 
 ### `WriteJSON` / `WriteCSV` / `WriteMD`
 
@@ -103,8 +89,6 @@ Convenience methods to serialize and save the tags collection directly to a file
 
 - **What it takes:** `filename`: The destination path of the file.
 - **What it returns:** An `error` if writing to the file or serialization fails.
-
----
 
 ## Mapping & Mapped Export Functions
 
@@ -122,11 +106,10 @@ Extracts structured data from a collection of elements using a key-to-selector m
 - **What it returns:** A slice of key-value maps representing the extracted data rows.
 
 #### Selector Syntax in Mappings
+
 - **Text Extraction:** Providing a standard CSS selector (e.g., `h2.title`) extracts the inner text of the first matching child element.
 - **Attribute Extraction:** Appending `@attribute_name` (e.g., `a.link @href`) extracts that specific attribute value from the matched element.
 - **Self-Attribute Extraction:** Providing just `@attribute_name` (e.g., `@data-sku`) extracts the attribute directly from the root element of each iteration.
-
----
 
 ### `ExportJSON` (Mapped)
 
@@ -138,8 +121,6 @@ Converts a slice of mapped key-value pairs into a pretty-printed JSON byte slice
 
 - **What it takes:** `data`: A slice of string maps.
 - **What it returns:** A pretty-printed JSON byte slice and an `error`.
-
----
 
 ### `ExportCSV` (Mapped)
 
@@ -153,8 +134,6 @@ Converts a slice of mapped key-value pairs into a CSV string.
 - **What it returns:** A CSV string containing the header row followed by values, and an `error`.
 - **Note:** Headers are gathered from all keys in the data slice and sorted alphabetically for deterministic output.
 
----
-
 ### `ExportMD` (Mapped)
 
 ```go
@@ -166,8 +145,6 @@ Converts a slice of mapped key-value pairs into a Markdown table.
 - **What it takes:** `data`: A slice of string maps.
 - **What it returns:** A Markdown table string and an `error`.
 - **Note:** Columns are sorted alphabetically. Any pipe (`|`) or newline (`\n`) characters in the values are cleaned to keep the table formatting intact.
-
----
 
 ### `WriteMappedJSON` / `WriteMappedCSV` / `WriteMappedMD`
 
@@ -183,8 +160,6 @@ Convenience functions to serialize and save mapped key-value data directly to sy
   - `filename`: The destination path of the file.
   - `data`: A slice of string maps.
 - **What it returns:** An `error` if serialization or file writing fails.
-
----
 
 ## Step-by-Step Example
 
@@ -290,6 +265,7 @@ func main() {
 ### 3. Output Formats
 
 #### JSON Output (`products.json`)
+
 ```json
 [
   {
@@ -308,7 +284,8 @@ func main() {
 ```
 
 #### Markdown Output (`products.md`)
-| name | price | sku | url |
-| --- | --- | --- | --- |
-| Wireless Charger | $19.99 | SKU-8891 | /products/wireless-charger |
+
+| name              | price  | sku      | url                         |
+| ----------------- | ------ | -------- | --------------------------- |
+| Wireless Charger  | $19.99 | SKU-8891 | /products/wireless-charger  |
 | Bluetooth Headset | $49.99 | SKU-4432 | /products/bluetooth-headset |
