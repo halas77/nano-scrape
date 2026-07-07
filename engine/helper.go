@@ -51,7 +51,7 @@ func InitDocument(input any) (*Tag, error) {
 }
 
 func LoadDocument(url string) (*Tag, error) {
-	resp, err := NewClient().Execute("GET", url, nil)
+	resp, err := NewClient().Get(url)
 
 	if err != nil {
 		return nil, err

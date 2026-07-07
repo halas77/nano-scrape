@@ -13,11 +13,10 @@ import (
 )
 
 type Client struct {
-	Header http.Header
-	client *http.Client
+	BaseHeader http.Header
+	client     *http.Client
 }
 
-// NewClient initializes a new HTTP engine with default configurations.
 func NewClient(baseHeader ...http.Header) *Client {
 	jar, _ := cookiejar.New(nil)
 
@@ -29,7 +28,7 @@ func NewClient(baseHeader ...http.Header) *Client {
 	}
 
 	return &Client{
-		Header: hdr,
+		BaseHeader: hdr,
 		client: &http.Client{
 			Timeout: 10 * time.Second,
 			Jar:     jar,
@@ -37,7 +36,6 @@ func NewClient(baseHeader ...http.Header) *Client {
 	}
 }
 
-// ProxyRotator assigns a custom transport to handle proxy rotations.
 func (c *Client) ProxyRotator(proxies ...string) error {
 	if c == nil {
 		return fmt.Errorf("client instance is nil")
@@ -53,21 +51,26 @@ func (c *Client) ProxyRotator(proxies ...string) error {
 	return nil
 }
 
-func (c *Client) Execute(method, targetURL string, body ...io.Reader) (io.Reader, error) {
-	var reqBody io.Reader
-	if len(body) > 0 {
-		reqBody = body[0]
-	}
-
-	req, err := http.NewRequest(method, targetURL, reqBody)
+// Execute is the single core function that handles all requests (GET, POST, etc.)
+func (c *Client) Execute(method, targetURL string, body io.Reader, extraHeaders ...map[string]string) (io.Reader, error) {
+	req, err := http.NewRequest(method, targetURL, body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	req.Header = c.Header.Clone()
+	// 1. Isolate headers per request from the base client configuration
+	req.Header = c.BaseHeader.Clone()
 
-	setDefaultHeader(req.Header, "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-	setDefaultHeader(req.Header, "Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
+	// 2. Inject extra operational headers passed from other methods
+	if len(extraHeaders) > 0 && extraHeaders[0] != nil {
+		for k, v := range extraHeaders[0] {
+			req.Header.Set(k, v)
+		}
+	}
+
+	// 3. Apply default fallbacks if they aren't already set
+	setDefaultHeader(req.Header, "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0 Safari/537.36")
+	setDefaultHeader(req.Header, "Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
 	setDefaultHeader(req.Header, "Accept-Language", "en-US,en;q=0.5")
 
 	resp, err := c.client.Do(req)
@@ -88,32 +91,40 @@ func (c *Client) Execute(method, targetURL string, body ...io.Reader) (io.Reader
 	return buf, nil
 }
 
-// SendJSON automates marshaling structures into JSON payloads.
-// Accepts HTTP methods like http.MethodPost, http.MethodPut, or http.MethodPatch.
+// Get handles standard HTTP GET requests.
+// It passes nil as the body to the primary Execute pipeline.
+func (c *Client) Get(targetURL string) (io.Reader, error) {
+	return c.Execute(http.MethodGet, targetURL, nil)
+}
+
+// SendJSON pipes payloads directly through the centralized Execute funnel
 func (c *Client) SendJSON(method, targetURL string, payload any) (io.Reader, error) {
 	jsonValue, err := json.Marshal(payload)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal json: %w", err)
 	}
 
-	reqBody := bytes.NewReader(jsonValue)
-	return c.executeWithModifier(targetURL, method, reqBody, func(h http.Header) {
-		h.Set("Content-Type", "application/json")
+	return c.Execute(method, targetURL, bytes.NewReader(jsonValue), map[string]string{
+		"Content-Type": "application/json",
 	})
 }
 
-// SendForm encodes payload maps into standard x-www-form-urlencoded payloads.
-// Accepts HTTP methods like http.MethodPost, http.MethodPut, or http.MethodPatch.
+// SendForm pipes payloads directly through the centralized Execute funnel
 func (c *Client) SendForm(method, targetURL string, payload map[string]string) (io.Reader, error) {
 	formData := url.Values{}
 	for key, val := range payload {
 		formData.Set(key, val)
 	}
 
-	reqBody := strings.NewReader(formData.Encode())
-	return c.executeWithModifier(targetURL, method, reqBody, func(h http.Header) {
-		h.Set("Content-Type", "application/x-www-form-urlencoded")
+	return c.Execute(method, targetURL, strings.NewReader(formData.Encode()), map[string]string{
+		"Content-Type": "application/x-www-form-urlencoded",
 	})
+}
+
+func setDefaultHeader(h http.Header, key, value string) {
+	if h.Get(key) == "" {
+		h.Set(key, value)
+	}
 }
 
 // CookiesFor retrieves stored cookies for a specific target URL.
@@ -126,38 +137,4 @@ func (c *Client) CookiesFor(rawURL string) []*http.Cookie {
 		return nil
 	}
 	return c.client.Jar.Cookies(u)
-}
-
-// IsBotBlock inspects response structures without draining the stream permanently.
-func IsBotBlock(resp *http.Response) bool {
-	if resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusTooManyRequests {
-		return true
-	}
-
-	if resp.Header.Get("Server") == "cloudflare" &&
-		(resp.StatusCode == http.StatusServiceUnavailable || resp.StatusCode == http.StatusForbidden) {
-		return true
-	}
-
-	bodyBytes, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
-	resp.Body = io.NopCloser(io.MultiReader(bytes.NewReader(bodyBytes), resp.Body))
-
-	lowered := bytes.ToLower(bodyBytes)
-	return bytes.Contains(lowered, []byte("captcha")) ||
-		bytes.Contains(lowered, []byte("javascript challenge")) ||
-		bytes.Contains(lowered, []byte("checking your browser"))
-}
-
-func setDefaultHeader(h http.Header, key, value string) {
-	if h.Get(key) == "" {
-		h.Set(key, value)
-	}
-}
-
-func (c *Client) executeWithModifier(targetURL, method string, body io.Reader, modifyHeaders func(http.Header)) (io.Reader, error) {
-	oldHeaders := c.Header.Clone()
-	modifyHeaders(c.Header)
-	defer func() { c.Header = oldHeaders }()
-
-	return c.Execute(method, targetURL, body)
 }

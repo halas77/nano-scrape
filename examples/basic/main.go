@@ -19,7 +19,7 @@ func main() {
 
 	// proxyTester()
 
-	testFromPost()
+	// testFromPost()
 }
 
 func requestTest() {
@@ -38,12 +38,12 @@ func requestTest() {
 		</div>
 	</article>
 	`
-	scrape, err := engine.InitDocument(input)
-	fmt.Println(scrape.FindFirst("div").Text())
+	input = "http://127.0.0.1:5501/examples/basic/index.html"
+	scrape, err := engine.LoadDocument(input)
+	fmt.Println(scrape.FindFirst("article").Print())
 
 	// fmt.Println(scrape)
 
-	// input = "http://127.0.0.1:5501/examples/basic/index.html"
 	// scrape, err := engine.InitDocument(input)
 
 	// fmt.Println(scrape.FindFirst("main").Print())
@@ -281,7 +281,7 @@ func testFromPost() {
 	req := engine.NewClient()
 
 	// Get login page with the same client used for POST so cookies/session are shared.
-	body, err := req.Execute("GET", url)
+	body, err := req.Get(url)
 	if err != nil {
 		fmt.Println("Error loading login page:", err)
 		return
@@ -329,7 +329,7 @@ func testFromPost() {
 	fmt.Println("Login request sent successfully")
 	fmt.Println("Cookies:", req.CookiesFor(url))
 
-	body, err2 := req.Execute("GET", "http://127.0.0.1:8000/companies")
+	body, err2 := req.Get("http://127.0.0.1:8000/companies")
 	if err2 != nil {
 		fmt.Println("Error loading login page:", err2)
 		return
@@ -406,7 +406,7 @@ func ScrapeTargetWithProxies() {
 
 	// 3. Execute a network request to pull down the webpage data stream.
 	// This returns an io.Reader (specifically a *bytes.Buffer), safely closing the network socket internally.
-	responseStream, err := client.Execute("GET", target)
+	responseStream, err := client.Get(target)
 	if err != nil {
 		log.Fatalf("❌ Network request failed: %v", err)
 	}
