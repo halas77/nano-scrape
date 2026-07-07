@@ -10,9 +10,11 @@ type Client struct {
 }
 ```
 
-## Functions
+## Core Functions
 
-### `NewClient`
+There are primary methods on the `*Client` struct for initiating and making HTTP request.
+
+### 1. `NewClient`
 
 ```go
 func NewClient(baseHeader ...http.Header) *Client
@@ -35,7 +37,33 @@ client := engine.NewClient(customHeader)
 
 ---
 
-### `Execute`
+### 2. `Get`
+
+```go
+func (c *Client) Get(targetURL string) (io.Reader, error)
+
+```
+
+A convenience wrapper around `Execute` specifically designed for issuing HTTP `GET` requests.
+
+- **What it takes:**
+- `targetURL`: The full destination URL string.
+
+- **What it returns:** An `io.Reader` holding the response body, or an error if the request fails or returns a non-200 status code.
+
+#### `💡 Example`
+
+```go
+responseStream, err := client.Get("https://api.example.com/data")
+if err != nil {
+    log.Fatal(err)
+}
+
+```
+
+---
+
+<!-- ### `Execute`
 
 ```go
 func (c *Client) Execute(method, targetURL string, body ...io.Reader) (io.Reader, error)
@@ -57,9 +85,9 @@ if err != nil {
 }
 ```
 
----
+--- -->
 
-### `SendJSON`
+### 3. `SendJSON`
 
 ```go
 func (c *Client) SendJSON(method, targetURL string, payload any) (io.Reader, error)
@@ -81,7 +109,7 @@ resp, err := client.SendJSON("POST", "<https://example.com/api/login>", userData
 
 ---
 
-### `SendForm`
+### 4. `SendForm`
 
 ```go
 func (c *Client) SendForm(method, targetURL string, payload map[string]string) (io.Reader, error)
@@ -103,7 +131,7 @@ resp, err := client.SendForm("POST", "<https://example.com/submit>", formData)
 
 ---
 
-### `CookiesFor`
+### 5. `CookiesFor`
 
 ```go
 func (c *Client) CookiesFor(rawURL string) []*http.Cookie
