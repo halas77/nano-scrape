@@ -17,7 +17,6 @@ type Client struct {
 	client *http.Client
 }
 
-// NewClient initializes a new HTTP engine with default configurations.
 func NewClient(baseHeader ...http.Header) *Client {
 	jar, _ := cookiejar.New(nil)
 
@@ -37,7 +36,6 @@ func NewClient(baseHeader ...http.Header) *Client {
 	}
 }
 
-// ProxyRotator assigns a custom transport to handle proxy rotations.
 func (c *Client) ProxyRotator(proxies ...string) {
 	rotator := NewProxyRotator(proxies)
 	c.client.Transport = &http.Transport{
@@ -83,8 +81,6 @@ func (c *Client) Execute(method, targetURL string, body ...io.Reader) (io.Reader
 	return buf, nil
 }
 
-// SendJSON automates marshaling structures into JSON payloads.
-// Accepts HTTP methods like http.MethodPost, http.MethodPut, or http.MethodPatch.
 func (c *Client) SendJSON(method, targetURL string, payload any) (io.Reader, error) {
 	jsonValue, err := json.Marshal(payload)
 	if err != nil {
@@ -97,8 +93,6 @@ func (c *Client) SendJSON(method, targetURL string, payload any) (io.Reader, err
 	})
 }
 
-// SendForm encodes payload maps into standard x-www-form-urlencoded payloads.
-// Accepts HTTP methods like http.MethodPost, http.MethodPut, or http.MethodPatch.
 func (c *Client) SendForm(method, targetURL string, payload map[string]string) (io.Reader, error) {
 	formData := url.Values{}
 	for key, val := range payload {
@@ -111,7 +105,6 @@ func (c *Client) SendForm(method, targetURL string, payload map[string]string) (
 	})
 }
 
-// CookiesFor retrieves stored cookies for a specific target URL.
 func (c *Client) CookiesFor(rawURL string) []*http.Cookie {
 	if c == nil || c.client == nil || c.client.Jar == nil || rawURL == "" {
 		return nil
@@ -123,7 +116,6 @@ func (c *Client) CookiesFor(rawURL string) []*http.Cookie {
 	return c.client.Jar.Cookies(u)
 }
 
-// IsBotBlock inspects response structures without draining the stream permanently.
 func IsBotBlock(resp *http.Response) bool {
 	if resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusTooManyRequests {
 		return true

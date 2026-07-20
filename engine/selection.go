@@ -84,14 +84,11 @@ func (t *Tag) nameSelector(n *html.Node) bool {
 	return false
 }
 
-// Add Traverse for selection Params
-
 func hasIntersection(params map[string]any, attributes []html.Attribute, isStrict bool) bool {
 	if params == nil {
 		return true
 	}
 
-	// Calculate how many attributes we actually need to match (ignoring internal keys)
 	expectedAttrCount := 0
 	for key := range params {
 		if key != "string" && key != "_name_" {
@@ -99,7 +96,6 @@ func hasIntersection(params map[string]any, attributes []html.Attribute, isStric
 		}
 	}
 
-	// If no attributes are provided to match, it's an automatic pass for attributes
 	if expectedAttrCount == 0 {
 		return true
 	}
@@ -143,7 +139,6 @@ func nameSelector(t Tag, params map[string]any) bool {
 	return canAddNode
 }
 
-// use a callback to make the filtering logic only use traverse function
 func traverse(tag Tag, limit uint8, recurse bool, cb TraverseCallback) uint8 {
 	n := tag.root
 
