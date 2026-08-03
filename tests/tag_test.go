@@ -34,7 +34,6 @@ func FindMatchingAttributes(attrs []*engine.Attribute, elementAttrs []html.Attri
 		normalizedKey := strings.ToLower(attr.Key)
 		if valA, found := lookup[normalizedKey]; found {
 			if normalizedKey == "string" {
-				// use flex for equality and increment counter if it is true true and continue
 			}
 
 			if valA == attr.Val {
@@ -98,14 +97,6 @@ func TestFindMatchingAttributes(t *testing.T) {
 		},
 	}
 
-	// t.Run("Is Flexi work ", func(t *testing.T) {
-	// 	result := engine.FlexSearch("btn btn-primary", "btn-primary", false)
-
-	// 	if result != true {
-	// 		t.Errorf("expected %v but found %v", true, result)
-	// 	}
-	// })
-
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			result := FindMatchingAttributes(tc.attr, tc.elementAttrs)
@@ -125,8 +116,7 @@ func BenchmarkMiniTest(b *testing.B) {
 		return
 	}
 
-	b.StartTimer() // locate the position we will start the timer for the bench test
-	// 3. Run the actual loop
+	b.StartTimer()
 
 	attr := []*engine.Attribute{
 		{Key: "id", Value: "footer-id"},
@@ -139,7 +129,6 @@ func BenchmarkMiniTest(b *testing.B) {
 	}
 }
 
-// BenchmarkFind benchmarks the Find method
 func BenchmarkFind(b *testing.B) {
 	scrape, err := engine.InitDocument(generateMockHTML(50))
 
@@ -148,7 +137,6 @@ func BenchmarkFind(b *testing.B) {
 		return
 	}
 
-	// 1. Setup the data needed for the test
 	name := "div"
 	params := []*engine.Attribute{
 		{
@@ -157,29 +145,23 @@ func BenchmarkFind(b *testing.B) {
 		},
 	}
 
-	// 2. Reset the timer to exclude the setup time above
 
-	b.StartTimer() // locate the position we will start the timer for the bench test
-	// 3. Run the actual loop
+	b.StartTimer() 
 	for b.Loop() {
 		scrape.Find(name, params, func(foundTag *engine.Tag) {
-			// Keep the callback minimal so we bench the method, not the callback logic
 		})
 	}
 }
 
 func BenchmarkEmpty(b *testing.B) {
 
-	b.StartTimer() // locate the position we will start the timer for the bench test
-	// 3. Run the actual loop
+	b.StartTimer() 
 	for b.Loop() {
 		for range 1 {
-			// fmt.Println("i:", i)
 		}
 	}
 }
 
-// BenchmarkFindAll benchmarks the FindAll method
 func BenchmarkFindAll(b *testing.B) {
 	scrape, err := engine.InitDocument(generateMockHTML(50))
 	if err != nil {
@@ -193,14 +175,12 @@ func BenchmarkFindAll(b *testing.B) {
 			Value: "footer-id",
 		},
 	}
-	// params := map[string]any{"id": "footer-id"}
 
 	for b.Loop() {
 		_ = scrape.FindAll(name, params)
 	}
 }
 
-// BenchmarkFind_NilParams benchmarks how the code handles nil map inputs
 func BenchmarkFindFirst(b *testing.B) {
 	scrape, err := engine.InitDocument(generateMockHTML(50))
 	if err != nil {
