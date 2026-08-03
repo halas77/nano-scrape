@@ -2,7 +2,11 @@ package engine
 
 import (
 	"fmt"
+	"io"
+	"net/http"
+	"net/http/httptest"
 	"strings"
+	"sync/atomic"
 	"testing"
 
 	"golang.org/x/net/html"
@@ -318,5 +322,62 @@ func TestExport(t *testing.T) {
 	}
 	if !strings.Contains(mappedMD, "| books | $39.99 | Go Programming |") {
 		t.Errorf("ExportMD row 1 is incorrect: %s", mappedMD)
+	}
+}
+
+func TestClient_ProxyRotator_NilClient(t *testing.T) {
+	var c *Client
+	err := c.ProxyRotator("socks5://127.0.0.1:1080")
+	if err == nil {
+		t.Fatal("expected error when client is nil, got nil")
+	}
+}
+
+func TestClient_ProxyRotator_Rotation(t *testing.T) {
+	// 1. Setup target HTTP server
+	targetServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("ok"))
+	}))
+	defer targetServer.Close()
+
+	// 2. Start two distinct local SOCKS5 proxies
+	var proxy1Hits, proxy2Hits int32
+	p1Addr, cleanup1 := startMockSocks5Server(t, &proxy1Hits)
+	defer cleanup1()
+
+	p2Addr, cleanup2 := startMockSocks5Server(t, &proxy2Hits)
+	defer cleanup2()
+
+	// 3. Initialize your client and configure ProxyRotator
+	c := &Client{
+		client: &http.Client{},
+	}
+
+	if err := c.ProxyRotator(p1Addr, p2Addr); err != nil {
+		t.Fatalf("failed to configure ProxyRotator: %v", err)
+	}
+
+	// 4. Send multiple requests and check hit counts
+	totalRequests := 4
+	for i := 0; i < totalRequests; i++ {
+		resp, err := c.client.Get(targetServer.URL)
+		if err != nil {
+			t.Fatalf("request %d failed: %v", i, err)
+		}
+		io.Copy(io.Discard, resp.Body)
+		resp.Body.Close()
+	}
+
+	// 5. Assert traffic was routed across both proxies
+	p1Total := atomic.LoadInt32(&proxy1Hits)
+	p2Total := atomic.LoadInt32(&proxy2Hits)
+
+	if p1Total == 0 || p2Total == 0 {
+		t.Errorf("expected traffic on both proxies, got Proxy 1: %d, Proxy 2: %d", p1Total, p2Total)
+	}
+
+	if p1Total+p2Total < int32(totalRequests) {
+		t.Errorf("expected at least %d total proxy connections, got %d", totalRequests, p1Total+p2Total)
 	}
 }
