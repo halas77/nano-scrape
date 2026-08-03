@@ -3,16 +3,19 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
+	"net"
 	"strings"
 
 	"github.com/halas77/nano-scrape/engine"
+	"github.com/things-go/go-socks5"
 )
 
 func main() {
-	// checkIP()
+	checkIP()
 
-	requestTest()
+	// requestTest()
 	// stringTest()
 	// exportDemo()
 	// stringTest()
@@ -239,38 +242,26 @@ func exportDemo() {
 }
 
 func proxyTester() {
-	// paste your freshly gathered public proxies here (include http:// prefix)
 	publicProxies := []string{
 		"http://2.26.3.66:8080",
 		// "http://2.26.17.187:8888",
 		// "http://23.247.136.254:80",
 	}
 
-	// rotator := engine.NewProxyRotator(publicProxies)
 	input := "http://127.0.0.1:8000/home"
 	request := engine.NewClient()
 
 	request.ProxyRotator(publicProxies...)
 	requestsCount := 4
 	for i := 1; i <= requestsCount; i++ {
-		body, err := request.Execute("GET", input, nil)
+		_, err := request.Get(input)
 
 		if err != nil {
 			fmt.Printf("[Req %d] ❌ Failed: %v (The public proxy might be dead)\n", i, err)
 			return
 		}
 
-		// ipPattern := regexp.MustCompile(`\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b`)
-
-		// Find the first match inside the HTML string
-		s, err := engine.InitDocument(body)
-		if err != nil {
-			fmt.Printf("[Req %d] ❌ Failed to parse HTML: %v\n", i, err)
-			return
-		}
-
-		// callerIP := ipPattern.FindString(string(body))
-		fmt.Printf("[Req %d] ✅ Success! Server Response:\n%s\n", i, s.SelectFirst("#ip-test").Print())
+		fmt.Printf("[Req %d] ✅ Success! Server Response:\n%s\n", i, "<response body not captured>")
 	}
 
 	fmt.Println("🏁 Test finished.")
@@ -348,21 +339,58 @@ type HttpBinResponse struct {
 	Origin string `json:"origin"` // This holds the IP address seen by the server
 }
 
+// Helper to launch a local go-socks5 proxy server returning its full URL and a teardown function
+func startMockSocks5Proxy() (string, func()) {
+	server := socks5.NewServer()
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		panic(fmt.Sprintf("failed to start socks5 listener: %v", err))
+	}
+
+	go func() {
+		for {
+			conn, err := listener.Accept()
+			if err != nil {
+				return
+			}
+			go server.ServeConn(conn)
+		}
+	}()
+
+	proxyURL := fmt.Sprintf("socks5://%s", listener.Addr().String())
+	return proxyURL, func() { listener.Close() }
+}
+
+type LaravelResponse struct {
+	IP   string `json:"ip"`
+	Port int    `json:"port"`
+	Full string `json:"full"`
+}
+
 func checkIP() {
-	// publicProxies := []string{
-	// 	"https://37.49.224.15:3128",
-	// 	"http://130.110.250.13:1111",
-	// 	"http://176.105.220.74:3129",
-	// }
-	input := "https://httpbin.org/get"
+	input := "http://127.0.0.1:8000/home-ip"
+
+	proxy1URL, cleanup1 := startMockSocks5Proxy()
+	defer cleanup1()
+
+	proxy2URL, cleanup2 := startMockSocks5Proxy()
+	defer cleanup2()
+
+	// 2. Build the list of active proxies
+	publicProxies := []string{
+		proxy1URL,
+		proxy2URL,
+	}
+
+	fmt.Println(proxy1URL, " ", proxy2URL)
 
 	// Assuming 'engine' is your custom internal package
 	request := engine.NewClient()
-	// request.ProxyRotator(publicProxies...)
+	request.ProxyRotator(publicProxies...)
 
 	requestsCount := 4
 	for i := 0; i <= requestsCount; i++ {
-		body, err := request.Execute("GET", input, nil)
+		body, err := request.Get(input)
 
 		if err != nil {
 			// Changed 'return' to 'continue' so one dead proxy doesn't kill your entire loop
@@ -370,16 +398,29 @@ func checkIP() {
 			continue
 		}
 
-		// 2. Create an instance of your target struct
-		var target HttpBinResponse
-
-		// 3. Decode the response body into the struct pointer
-		err = json.NewDecoder(body).Decode(&target)
-
+		// 2. Read the response stream once, then unmarshal into multiple structs
+		bodyBytes, err := io.ReadAll(body)
 		if err != nil {
+			fmt.Printf("[Req %d] ❌ Error reading response body: %v\n", i, err)
+			continue
+		}
+
+		// 3. Decode into target struct
+		var target HttpBinResponse
+		if err := json.Unmarshal(bodyBytes, &target); err != nil {
 			fmt.Printf("[Req %d] ❌ Error decoding JSON: %v\n", i, err)
 			continue
 		}
+
+		// 4. Parse JSON returned by Laravel
+		var laravelData LaravelResponse
+		if err := json.Unmarshal(bodyBytes, &laravelData); err != nil {
+			fmt.Printf("[Req %d] ❌ Failed parsing JSON: %v\nBody was: %s\n", i, err, string(bodyBytes))
+			return
+		}
+
+		fmt.Printf("[Req %d] ✅ Laravel saw client IP: %s | Port: %d | Matches proxy list? %v\n",
+			i, laravelData.IP, laravelData.Port)
 
 		// 4. Extract the client IP from the struct and display it
 		fmt.Printf("[Req %d] ✅ Success! Server detected your proxy IP as: %s\n", i, target.Origin)
