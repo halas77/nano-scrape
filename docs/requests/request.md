@@ -35,9 +35,33 @@ customHeader.Set("Authorization", "Bearer token123")
 client := engine.NewClient(customHeader)
 ```
 
+### 2. `Execute`
+
+```go
+func (c *Client) Execute(method, targetURL string, body ...io.Reader) (io.Reader, error)
+```
+
+Executes a generic HTTP request. It manages underlying network memory cleanup automatically.
+
+- **What it takes:** \* `method`: The HTTP verb (e.g., `"GET"`, `"POST"`).
+- `targetURL`: The full destination URL string.
+- `body`: _(Optional)_ An optional input stream data payload.
+- **What it returns:** An `io.Reader` holding the response body, or an error if the request fails or returns a non-200 status code.
+
+#### `💡 Example`
+
+```go
+responseStream, err := client.Execute("GET", "<https://api.example.com/data>")
+if err != nil {
+    log.Fatal(err)
+}
+```
+
 ---
 
-### 2. `Get`
+---
+
+### 3. `Get`
 
 ```go
 func (c *Client) Get(targetURL string) (io.Reader, error)
@@ -63,31 +87,7 @@ if err != nil {
 
 ---
 
-<!-- ### `Execute`
-
-```go
-func (c *Client) Execute(method, targetURL string, body ...io.Reader) (io.Reader, error)
-```
-
-Executes a generic HTTP request. It manages underlying network memory cleanup automatically.
-
-- **What it takes:** \* `method`: The HTTP verb (e.g., `"GET"`, `"POST"`).
-- `targetURL`: The full destination URL string.
-- `body`: _(Optional)_ An optional input stream data payload.
-- **What it returns:** An `io.Reader` holding the response body, or an error if the request fails or returns a non-200 status code.
-
-#### `💡 Example`
-
-```go
-responseStream, err := client.Execute("GET", "<https://api.example.com/data>")
-if err != nil {
-    log.Fatal(err)
-}
-```
-
---- -->
-
-### 3. `SendJSON`
+### 4. `SendJSON`
 
 ```go
 func (c *Client) SendJSON(method, targetURL string, payload any) (io.Reader, error)
@@ -109,7 +109,7 @@ resp, err := client.SendJSON("POST", "<https://example.com/api/login>", userData
 
 ---
 
-### 4. `SendForm`
+### 5. `SendForm`
 
 ```go
 func (c *Client) SendForm(method, targetURL string, payload map[string]string) (io.Reader, error)
@@ -131,7 +131,7 @@ resp, err := client.SendForm("POST", "<https://example.com/submit>", formData)
 
 ---
 
-### 5. `CookiesFor`
+### 6. `CookiesFor`
 
 ```go
 func (c *Client) CookiesFor(rawURL string) []*http.Cookie
