@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"strings"
 
@@ -337,18 +336,15 @@ func testFromPost() {
 }
 
 type HttpBinResponse struct {
-	Origin string `json:"origin"` // This holds the IP address seen by the server
+	Origin string `json:"origin"`
 }
 
-// ClientData holds the client connection details
 type ClientData struct {
 	IP        string `json:"ip"`
-	Port      string `json:"port"` // Note: REMOTE_PORT comes as a string from PHP/HTTP headers
+	Port      string `json:"port"`
 	UserAgent string `json:"user_agent"`
 	Protocol  string `json:"protocol"`
 }
-
-// LaravelResponse represents the outer API wrapper response
 type LaravelResponse struct {
 	Success bool       `json:"success"`
 	Message string     `json:"message"`
@@ -356,9 +352,7 @@ type LaravelResponse struct {
 	Data    ClientData `json:"data"`
 }
 
-// Pass the IP you want the proxy to present to target servers (e.g., "127.0.0.2")
 func startMockSocks5Proxy(outboundIP string) (string, func()) {
-	// Configure the proxy to dial out using outboundIP as its source address
 	conf := &socks5.Config{
 		Dial: func(ctx context.Context, network, addr string) (net.Conn, error) {
 			localAddr, err := net.ResolveTCPAddr("tcp", outboundIP+":0")
@@ -366,7 +360,7 @@ func startMockSocks5Proxy(outboundIP string) (string, func()) {
 				return nil, err
 			}
 			dialer := net.Dialer{
-				LocalAddr: localAddr, // <--- This forces Laravel to see outboundIP!
+				LocalAddr: localAddr,
 			}
 			return dialer.DialContext(ctx, network, addr)
 		},
@@ -377,7 +371,6 @@ func startMockSocks5Proxy(outboundIP string) (string, func()) {
 		panic(fmt.Sprintf("failed to create socks5 server: %v", err))
 	}
 
-	// Listen locally on any available port
 	listener, err := net.Listen("tcp", outboundIP+":0")
 	if err != nil {
 		panic(fmt.Sprintf("failed to start socks5 listener on %s: %v", outboundIP, err))
@@ -407,11 +400,8 @@ func checkIP() {
 		proxies = append(proxies, proxyURL)
 	}
 
-	// 2. Build the list of active proxies
-
 	fmt.Println(proxies)
 
-	// Assuming 'engine' is your custom internal package
 	request := engine.NewClient()
 	request.ProxyRotator(proxies...)
 
@@ -420,83 +410,32 @@ func checkIP() {
 		body, err := request.Get(input)
 
 		if err != nil {
-			// Changed 'return' to 'continue' so one dead proxy doesn't kill your entire loop
-			fmt.Printf("[Req %d] ❌ Failed: %v (The public proxy might be dead)\n", i, err)
+			fmt.Printf("[Req %d] Failed: %v (The public proxy might be dead)\n", i, err)
 			continue
 		}
 
-		// 2. Read the response stream once, then unmarshal into multiple structs
 		bodyBytes, err := io.ReadAll(body)
 		if err != nil {
-			fmt.Printf("[Req %d] ❌ Error reading response body: %v\n", i, err)
+			fmt.Printf("[Req %d] Error reading response body: %v\n", i, err)
 			continue
 		}
 
-		// 3. Decode into target struct
 		var target HttpBinResponse
 		if err := json.Unmarshal(bodyBytes, &target); err != nil {
-			fmt.Printf("[Req %d] ❌ Error decoding JSON: %v\n", i, err)
+			fmt.Printf("[Req %d] Error decoding JSON: %v\n", i, err)
 			continue
 		}
 
-		// 4. Parse JSON returned by Laravel
 		var laravelData LaravelResponse
 		if err := json.Unmarshal(bodyBytes, &laravelData); err != nil {
-			fmt.Printf("[Req %d] ❌ Failed parsing JSON: %v\nBody was: %s\n", i, err, string(bodyBytes))
+			fmt.Printf("[Req %d] Failed parsing JSON: %v\nBody was: %s\n", i, err, string(bodyBytes))
 			return
 		}
 
-		fmt.Printf("[Req %d] ✅ Laravel saw client IP: %s | Port: %s Matches proxy list? \n",
+		fmt.Printf("[Req %d] Laravel saw client IP: %s | Port: %s Matches proxy list? \n",
 			i, laravelData.Data.IP, laravelData.Data.Port)
 
 	}
 
-	fmt.Println("🏁 Test finished.")
-}
-
-func ScrapeTargetWithProxies() {
-	proxies := []string{
-		"http://proxy-us.example.com:3128",
-		"http://proxy-eu.example.com:3128",
-	}
-	target := "https://example.com"
-
-	// 1. Initialize your custom HTTP client wrapper
-	client := engine.NewClient()
-
-	// 2. Attach your proxy list using the ProxyRotator method.
-	// This automatically configures the internal Go http.Transport to cycle proxies safely.
-	client.ProxyRotator(proxies...)
-
-	fmt.Println("🚀 Request pipeline initialized with proxy rotation...")
-
-	// 3. Execute a network request to pull down the webpage data stream.
-	// This returns an io.Reader (specifically a *bytes.Buffer), safely closing the network socket internally.
-	responseStream, err := client.Get(target)
-	if err != nil {
-		log.Fatalf("❌ Network request failed: %v", err)
-	}
-
-	// 4. Pass the streaming data directly into the HTML Parser.
-	// InitDocument automatically reads from the io.Reader stream.
-	rootTag, err := engine.InitDocument(responseStream)
-	if err != nil {
-		log.Fatalf("❌ Failed to parse HTML content: %v", err)
-	}
-
-	fmt.Printf("✅ Successfully fetched and parsed: %s (Root Tag: %s)\n", target, rootTag.Name)
-
-	// 5. Use the Tag query functions to extract data from the document tree.
-	// Find the very first <h1> element on the page
-	firstHeading := rootTag.FindFirst("h1")
-	if firstHeading != nil {
-		fmt.Printf("🎯 First Heading found on page: %s\n", firstHeading.Name)
-	}
-
-	// Stream and print all links found on the page using a callback
-	fmt.Println("🔗 Listing all links found on the page:")
-	rootTag.Find("a", nil, func(linkTag *engine.Tag) {
-		// You can access link attributes via linkTag.Attrs
-		fmt.Printf("   Found link element: %s\n", linkTag.Name)
-	})
+	fmt.Println("Test finished.")
 }
