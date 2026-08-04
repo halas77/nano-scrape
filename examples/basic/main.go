@@ -1,18 +1,22 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
+	"net"
 	"strings"
 
+	"github.com/armon/go-socks5"
 	"github.com/halas77/nano-scrape/engine"
 )
 
 func main() {
-	// checkIP()
+	checkIP()
 
-	requestTest()
+	// requestTest()
 	// stringTest()
 	// exportDemo()
 	// stringTest()
@@ -38,12 +42,12 @@ func requestTest() {
 		</div>
 	</article>
 	`
-	scrape, err := engine.InitDocument(input)
-	fmt.Println(scrape.FindFirst("div").Text())
+	input = "http://127.0.0.1:5501/examples/basic/index.html"
+	scrape, err := engine.LoadDocument(input)
+	fmt.Println(scrape.FindFirst("article").Print())
 
 	// fmt.Println(scrape)
 
-	// input = "http://127.0.0.1:5501/examples/basic/index.html"
 	// scrape, err := engine.InitDocument(input)
 
 	// fmt.Println(scrape.FindFirst("main").Print())
@@ -239,38 +243,26 @@ func exportDemo() {
 }
 
 func proxyTester() {
-	// paste your freshly gathered public proxies here (include http:// prefix)
 	publicProxies := []string{
 		"http://2.26.3.66:8080",
 		// "http://2.26.17.187:8888",
 		// "http://23.247.136.254:80",
 	}
 
-	// rotator := engine.NewProxyRotator(publicProxies)
 	input := "http://127.0.0.1:8000/home"
 	request := engine.NewClient()
 
 	request.ProxyRotator(publicProxies...)
 	requestsCount := 4
 	for i := 1; i <= requestsCount; i++ {
-		body, err := request.Execute("GET", input, nil)
+		_, err := request.Get(input)
 
 		if err != nil {
 			fmt.Printf("[Req %d] ❌ Failed: %v (The public proxy might be dead)\n", i, err)
 			return
 		}
 
-		// ipPattern := regexp.MustCompile(`\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b`)
-
-		// Find the first match inside the HTML string
-		s, err := engine.InitDocument(body)
-		if err != nil {
-			fmt.Printf("[Req %d] ❌ Failed to parse HTML: %v\n", i, err)
-			return
-		}
-
-		// callerIP := ipPattern.FindString(string(body))
-		fmt.Printf("[Req %d] ✅ Success! Server Response:\n%s\n", i, s.SelectFirst("#ip-test").Print())
+		fmt.Printf("[Req %d] ✅ Success! Server Response:\n%s\n", i, "<response body not captured>")
 	}
 
 	fmt.Println("🏁 Test finished.")
@@ -281,7 +273,7 @@ func testFromPost() {
 	req := engine.NewClient()
 
 	// Get login page with the same client used for POST so cookies/session are shared.
-	body, err := req.Execute("GET", url, nil)
+	body, err := req.Get(url)
 	if err != nil {
 		fmt.Println("Error loading login page:", err)
 		return
@@ -329,7 +321,7 @@ func testFromPost() {
 	fmt.Println("Login request sent successfully")
 	fmt.Println("Cookies:", req.CookiesFor(url))
 
-	body, err2 := req.Execute("GET", "http://127.0.0.1:8000/companies", nil)
+	body, err2 := req.Get("http://127.0.0.1:8000/companies")
 	if err2 != nil {
 		fmt.Println("Error loading login page:", err2)
 		return
@@ -348,21 +340,84 @@ type HttpBinResponse struct {
 	Origin string `json:"origin"` // This holds the IP address seen by the server
 }
 
+// ClientData holds the client connection details
+type ClientData struct {
+	IP        string `json:"ip"`
+	Port      string `json:"port"` // Note: REMOTE_PORT comes as a string from PHP/HTTP headers
+	UserAgent string `json:"user_agent"`
+	Protocol  string `json:"protocol"`
+}
+
+// LaravelResponse represents the outer API wrapper response
+type LaravelResponse struct {
+	Success bool       `json:"success"`
+	Message string     `json:"message"`
+	Status  int        `json:"status"`
+	Data    ClientData `json:"data"`
+}
+
+// Pass the IP you want the proxy to present to target servers (e.g., "127.0.0.2")
+func startMockSocks5Proxy(outboundIP string) (string, func()) {
+	// Configure the proxy to dial out using outboundIP as its source address
+	conf := &socks5.Config{
+		Dial: func(ctx context.Context, network, addr string) (net.Conn, error) {
+			localAddr, err := net.ResolveTCPAddr("tcp", outboundIP+":0")
+			if err != nil {
+				return nil, err
+			}
+			dialer := net.Dialer{
+				LocalAddr: localAddr, // <--- This forces Laravel to see outboundIP!
+			}
+			return dialer.DialContext(ctx, network, addr)
+		},
+	}
+
+	server, err := socks5.New(conf)
+	if err != nil {
+		panic(fmt.Sprintf("failed to create socks5 server: %v", err))
+	}
+
+	// Listen locally on any available port
+	listener, err := net.Listen("tcp", outboundIP+":0")
+	if err != nil {
+		panic(fmt.Sprintf("failed to start socks5 listener on %s: %v", outboundIP, err))
+	}
+
+	go func() {
+		for {
+			conn, err := listener.Accept()
+			if err != nil {
+				return
+			}
+			go server.ServeConn(conn)
+		}
+	}()
+
+	proxyURL := fmt.Sprintf("socks5://%s", listener.Addr().String())
+	return proxyURL, func() { listener.Close() }
+}
+
 func checkIP() {
-	// publicProxies := []string{
-	// 	"https://37.49.224.15:3128",
-	// 	"http://130.110.250.13:1111",
-	// 	"http://176.105.220.74:3129",
-	// }
-	input := "https://httpbin.org/get"
+	input := "http://127.0.0.1:8000/api/home-ip"
+
+	proxies := []string{}
+	for i := range [5]struct{}{} {
+		proxyURL, cleanup := startMockSocks5Proxy(fmt.Sprintf("127.0.0.%d", i+2))
+		defer cleanup()
+		proxies = append(proxies, proxyURL)
+	}
+
+	// 2. Build the list of active proxies
+
+	fmt.Println(proxies)
 
 	// Assuming 'engine' is your custom internal package
 	request := engine.NewClient()
-	// request.ProxyRotator(publicProxies...)
+	request.ProxyRotator(proxies...)
 
-	requestsCount := 4
-	for i := 0; i <= requestsCount; i++ {
-		body, err := request.Execute("GET", input, nil)
+	requestsCount := 8
+	for i := range requestsCount {
+		body, err := request.Get(input)
 
 		if err != nil {
 			// Changed 'return' to 'continue' so one dead proxy doesn't kill your entire loop
@@ -370,19 +425,30 @@ func checkIP() {
 			continue
 		}
 
-		// 2. Create an instance of your target struct
-		var target HttpBinResponse
-
-		// 3. Decode the response body into the struct pointer
-		err = json.NewDecoder(body).Decode(&target)
-
+		// 2. Read the response stream once, then unmarshal into multiple structs
+		bodyBytes, err := io.ReadAll(body)
 		if err != nil {
+			fmt.Printf("[Req %d] ❌ Error reading response body: %v\n", i, err)
+			continue
+		}
+
+		// 3. Decode into target struct
+		var target HttpBinResponse
+		if err := json.Unmarshal(bodyBytes, &target); err != nil {
 			fmt.Printf("[Req %d] ❌ Error decoding JSON: %v\n", i, err)
 			continue
 		}
 
-		// 4. Extract the client IP from the struct and display it
-		fmt.Printf("[Req %d] ✅ Success! Server detected your proxy IP as: %s\n", i, target.Origin)
+		// 4. Parse JSON returned by Laravel
+		var laravelData LaravelResponse
+		if err := json.Unmarshal(bodyBytes, &laravelData); err != nil {
+			fmt.Printf("[Req %d] ❌ Failed parsing JSON: %v\nBody was: %s\n", i, err, string(bodyBytes))
+			return
+		}
+
+		fmt.Printf("[Req %d] ✅ Laravel saw client IP: %s | Port: %s Matches proxy list? \n",
+			i, laravelData.Data.IP, laravelData.Data.Port)
+
 	}
 
 	fmt.Println("🏁 Test finished.")
@@ -406,7 +472,7 @@ func ScrapeTargetWithProxies() {
 
 	// 3. Execute a network request to pull down the webpage data stream.
 	// This returns an io.Reader (specifically a *bytes.Buffer), safely closing the network socket internally.
-	responseStream, err := client.Execute("GET", target)
+	responseStream, err := client.Get(target)
 	if err != nil {
 		log.Fatalf("❌ Network request failed: %v", err)
 	}

@@ -132,7 +132,7 @@ func TestFlexMatch(t *testing.T) {
 		{
 			name:          "Case sensitive fail",
 			main:          "nano-scrape",
-			target:        "nano-scrape",
+			target:        "Nano-Scrape",
 			caseSensitive: true,
 			expected:      false,
 		},
@@ -318,5 +318,13 @@ func TestExport(t *testing.T) {
 	}
 	if !strings.Contains(mappedMD, "| books | $39.99 | Go Programming |") {
 		t.Errorf("ExportMD row 1 is incorrect: %s", mappedMD)
+	}
+}
+
+func TestClient_ProxyRotator_NilClient(t *testing.T) {
+	var c *Client
+	err := c.ProxyRotator("socks5://127.0.0.1:1080")
+	if err == nil {
+		t.Fatal("expected error when client is nil, got nil")
 	}
 }

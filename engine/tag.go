@@ -66,6 +66,9 @@ func (t *Tag) SelectFirst(selector string) *Tag {
 }
 
 func (t *Tag) Find(name string, attrs []*Attribute, cb TagCallback) {
+	if t == nil {
+		return
+	}
 
 	t.recurse = true
 	t.name = name
@@ -81,6 +84,10 @@ func (t *Tag) Find(name string, attrs []*Attribute, cb TagCallback) {
 }
 
 func (t *Tag) FindAll(name string, attribute ...[]*Attribute) *Tags {
+
+	if t == nil {
+		return nil
+	}
 
 	var tags = &Tags{}
 	var attr []*Attribute
