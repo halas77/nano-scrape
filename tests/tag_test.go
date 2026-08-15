@@ -1,11 +1,11 @@
-package engine
+package nano
 
 import (
 	"fmt"
 	"strings"
 	"testing"
 
-	"github.com/halas77/nano-scrape/engine"
+	"github.com/halas77/nano-scrape/nano"
 	"golang.org/x/net/html"
 )
 
@@ -20,7 +20,7 @@ func generateMockHTML(count int) string {
 	return html
 }
 
-func FindMatchingAttributes(attrs []*engine.Attribute, elementAttrs []html.Attribute) bool {
+func FindMatchingAttributes(attrs []*nano.Attribute, elementAttrs []html.Attribute) bool {
 	lookup := make(map[string]string)
 	for _, attr := range attrs {
 		normalizedKey := strings.ToLower(attr.Key)
@@ -45,7 +45,7 @@ func FindMatchingAttributes(attrs []*engine.Attribute, elementAttrs []html.Attri
 	return attrsLength == counter
 }
 
-func nameSelector(n *html.Node, name string, attrs []*engine.Attribute) bool {
+func nameSelector(n *html.Node, name string, attrs []*nano.Attribute) bool {
 	if n.Type == html.ElementNode && n.Data == name {
 		return FindMatchingAttributes(attrs, n.Attr)
 	}
@@ -53,7 +53,7 @@ func nameSelector(n *html.Node, name string, attrs []*engine.Attribute) bool {
 	return false
 }
 
-func traverse(n *html.Node, name string, attrs []*engine.Attribute, f func(*html.Node)) {
+func traverse(n *html.Node, name string, attrs []*nano.Attribute, f func(*html.Node)) {
 
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
 		if nameSelector(c, name, attrs) {
@@ -67,13 +67,13 @@ func traverse(n *html.Node, name string, attrs []*engine.Attribute, f func(*html
 func TestFindMatchingAttributes(t *testing.T) {
 	tests := []struct {
 		name         string
-		attr         []*engine.Attribute
+		attr         []*nano.Attribute
 		elementAttrs []html.Attribute
 		expected     bool
 	}{
 		{
 			name: "returns false when all attributes value does not match",
-			attr: []*engine.Attribute{
+			attr: []*nano.Attribute{
 				{Key: "id", Value: "submit-btn"},
 				{Key: "class", Value: "btn-primary"},
 			},
@@ -85,7 +85,7 @@ func TestFindMatchingAttributes(t *testing.T) {
 		},
 		{
 			name: "returns true when all attributes value match",
-			attr: []*engine.Attribute{
+			attr: []*nano.Attribute{
 				{Key: "id", Value: "submit-btn"},
 				{Key: "class", Value: "btn-primary"},
 			},
@@ -118,7 +118,7 @@ func BenchmarkMiniTest(b *testing.B) {
 
 	b.StartTimer()
 
-	attr := []*engine.Attribute{
+	attr := []*nano.Attribute{
 		{Key: "id", Value: "footer-id"},
 	}
 
@@ -130,7 +130,7 @@ func BenchmarkMiniTest(b *testing.B) {
 }
 
 func BenchmarkFind(b *testing.B) {
-	scrape, err := engine.InitDocument(generateMockHTML(50))
+	scrape, err := nano.InitDocument(generateMockHTML(50))
 
 	if err != nil {
 		fmt.Println(err)
@@ -138,7 +138,7 @@ func BenchmarkFind(b *testing.B) {
 	}
 
 	name := "div"
-	params := []*engine.Attribute{
+	params := []*nano.Attribute{
 		{
 			Key:   "class",
 			Value: "main-panel",
@@ -148,7 +148,7 @@ func BenchmarkFind(b *testing.B) {
 
 	b.StartTimer() 
 	for b.Loop() {
-		scrape.Find(name, params, func(foundTag *engine.Tag) {
+		scrape.Find(name, params, func(foundTag *nano.Tag) {
 		})
 	}
 }
@@ -163,13 +163,13 @@ func BenchmarkEmpty(b *testing.B) {
 }
 
 func BenchmarkFindAll(b *testing.B) {
-	scrape, err := engine.InitDocument(generateMockHTML(50))
+	scrape, err := nano.InitDocument(generateMockHTML(50))
 	if err != nil {
 		return
 	}
 
 	name := "span"
-	params := []*engine.Attribute{
+	params := []*nano.Attribute{
 		{
 			Key:   "id",
 			Value: "footer-id",
@@ -182,13 +182,13 @@ func BenchmarkFindAll(b *testing.B) {
 }
 
 func BenchmarkFindFirst(b *testing.B) {
-	scrape, err := engine.InitDocument(generateMockHTML(50))
+	scrape, err := nano.InitDocument(generateMockHTML(50))
 	if err != nil {
 		return
 	}
 
 	name := "div"
-	params := []*engine.Attribute{
+	params := []*nano.Attribute{
 		// {
 		// 	Key:   "id",
 		// 	Value: "footer-id",
@@ -207,7 +207,7 @@ func BenchmarkFindFirst(b *testing.B) {
 
 // Test select functionality
 func BenchmarkSelect(b *testing.B) {
-	scrape, err := engine.InitDocument(generateMockHTML(50))
+	scrape, err := nano.InitDocument(generateMockHTML(50))
 	if err != nil {
 		return
 	}
@@ -222,7 +222,7 @@ func BenchmarkSelect(b *testing.B) {
 }
 
 func BenchmarkSelectAll(b *testing.B) {
-	scrape, err := engine.InitDocument(generateMockHTML(50))
+	scrape, err := nano.InitDocument(generateMockHTML(50))
 	if err != nil {
 		return
 	}
