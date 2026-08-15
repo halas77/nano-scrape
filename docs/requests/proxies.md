@@ -24,7 +24,7 @@ proxyList := []string{
     "http://proxy-us.example.com:3128",
     "http://proxy-eu.example.com:3128",
 }
-rotator := engine.NewProxyRotator(proxyList)
+rotator := nano.NewProxyRotator(proxyList)
 ```
 
 ### `GetProxyFunc`
@@ -52,7 +52,7 @@ A convenience method attached directly to your custom `Client`. It creates a rot
 #### `💡 Example`
 
 ```go
-client := engine.NewClient()
+client := nano.NewClient()
 
 // Directly apply rotating proxies to your client instance
 client.ProxyRotator(
@@ -83,7 +83,7 @@ func ScrapeTargetWithProxies() {
 	target := "https://example.com"
 
 	// 1. Initialize your custom HTTP client wrapper
-	client := engine.NewClient()
+	client := nano.NewClient()
 
 	// 2. Attach your proxy list using the ProxyRotator method.
 	// This automatically configures the internal Go http.Transport to cycle proxies safely.
@@ -100,7 +100,7 @@ func ScrapeTargetWithProxies() {
 
 	// 4. Pass the streaming data directly into the HTML Parser.
 	// InitDocument automatically reads from the io.Reader stream.
-	rootTag, err := engine.InitDocument(responseStream)
+	rootTag, err := nano.InitDocument(responseStream)
 	if err != nil {
 		log.Fatalf("❌ Failed to parse HTML content: %v", err)
 	}
@@ -116,7 +116,7 @@ func ScrapeTargetWithProxies() {
 
 	// Stream and print all links found on the page using a callback
 	fmt.Println("🔗 Listing all links found on the page:")
-	rootTag.Find("a", nil, func(linkTag *engine.Tag) {
+	rootTag.Find("a", nil, func(linkTag *nano.Tag) {
 		// You can access link attributes via linkTag.Attrs
 		fmt.Printf("   Found link element: %s\n", linkTag.Name)
 	})

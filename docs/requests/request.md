@@ -32,7 +32,7 @@ Creates and configures a new HTTP client. It includes a built-in session cookie 
 customHeader := make(http.Header)
 customHeader.Set("Authorization", "Bearer token123")
 
-client := engine.NewClient(customHeader)
+client := nano.NewClient(customHeader)
 ```
 
 ---

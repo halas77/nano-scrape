@@ -8,15 +8,14 @@ import (
 	"net"
 	"strings"
 
-	"github.com/halas77/nano-scrape/engine"
+	"github.com/halas77/nano-scrape/nano"
 	"github.com/things-go/go-socks5"
 )
 
 func main() {
-	checkIP()
-
+	// checkIP()
 	// requestTest()
-	// stringTest()
+	stringTest()
 	// exportDemo()
 	// stringTest()
 
@@ -42,12 +41,12 @@ func requestTest() {
 	</article>
 	`
 	input = "http://127.0.0.1:5501/examples/basic/index.html"
-	scrape, err := engine.LoadDocument(input)
+	scrape, err := nano.LoadDocument(input)
 	fmt.Println(scrape.FindFirst("article").Print())
 
 	// fmt.Println(scrape)
 
-	// scrape, err := engine.InitDocument(input)
+	// scrape, err := nano.InitDocument(input)
 
 	// fmt.Println(scrape.FindFirst("main").Print())
 
@@ -56,7 +55,7 @@ func requestTest() {
 		return
 	}
 
-	// params := []*engine.Attribute{
+	// params := []*nano.Attribute{
 	// 	{
 	// 		Key:   "class",
 	// 		Value: "details",
@@ -66,11 +65,11 @@ func requestTest() {
 	// main := scrape.FindAll("div", params)
 	// fmt.Println(main.Print())
 
-	// scrape.Find("div", params, func(t engine.Tag) {
+	// scrape.Find("div", params, func(t nano.Tag) {
 	// 	fmt.Println(t.Print())
 	// })
 
-	// scrape.Query(".price-tag", func(t *engine.Tag) {
+	// scrape.Query(".price-tag", func(t *nano.Tag) {
 	// 	fmt.Println(t.Print())
 	// })
 
@@ -104,7 +103,7 @@ func stringTest() {
 			</div>
 		`
 
-	root, err := engine.InitDocument(input)
+	root, err := nano.InitDocument(input)
 
 	if err != nil {
 		fmt.Println("Error parsing HTML:", err)
@@ -156,7 +155,7 @@ func exportDemo() {
 			</div>
 		`
 
-	root, err := engine.InitDocument(input)
+	root, err := nano.InitDocument(input)
 	if err != nil {
 		fmt.Println("Error parsing HTML:", err)
 		return
@@ -176,7 +175,7 @@ func exportDemo() {
 	mappedData := products.Map(mapping)
 
 	// 1. Export structured data to JSON
-	jsonBytes, err := engine.ExportJSON(mappedData)
+	jsonBytes, err := nano.ExportJSON(mappedData)
 	if err != nil {
 		fmt.Println("Error exporting JSON:", err)
 		return
@@ -184,7 +183,7 @@ func exportDemo() {
 	fmt.Println("Structured Mapped JSON:\n", string(jsonBytes))
 
 	// 2. Export structured data to CSV
-	csvStr, err := engine.ExportCSV(mappedData)
+	csvStr, err := nano.ExportCSV(mappedData)
 	if err != nil {
 		fmt.Println("Error exporting CSV:", err)
 		return
@@ -192,7 +191,7 @@ func exportDemo() {
 	fmt.Println("Structured Mapped CSV:\n", csvStr)
 
 	// 3. Export structured data to Markdown
-	mdStr, err := engine.ExportMD(mappedData)
+	mdStr, err := nano.ExportMD(mappedData)
 	if err != nil {
 		fmt.Println("Error exporting MD:", err)
 		return
@@ -200,21 +199,21 @@ func exportDemo() {
 	fmt.Println("Structured Mapped Markdown Table:\n", mdStr)
 
 	// 4. Write them directly to files
-	err = engine.WriteMappedJSON("scraped_products.json", mappedData)
+	err = nano.WriteMappedJSON("scraped_products.json", mappedData)
 	if err != nil {
 		fmt.Println("Error writing JSON file:", err)
 	} else {
 		fmt.Println("Successfully wrote structured data to: scraped_products.json")
 	}
 
-	err = engine.WriteMappedCSV("scraped_products.csv", mappedData)
+	err = nano.WriteMappedCSV("scraped_products.csv", mappedData)
 	if err != nil {
 		fmt.Println("Error writing CSV file:", err)
 	} else {
 		fmt.Println("Successfully wrote structured data to: scraped_products.csv")
 	}
 
-	err = engine.WriteMappedMD("scraped_products.md", mappedData)
+	err = nano.WriteMappedMD("scraped_products.md", mappedData)
 	if err != nil {
 		fmt.Println("Error writing MD file:", err)
 	} else {
@@ -249,7 +248,7 @@ func proxyTester() {
 	}
 
 	input := "http://127.0.0.1:8000/home"
-	request := engine.NewClient()
+	request := nano.NewClient()
 
 	request.ProxyRotator(publicProxies...)
 	requestsCount := 4
@@ -269,7 +268,7 @@ func proxyTester() {
 
 func testFromPost() {
 	url := "http://127.0.0.1:8000/login"
-	req := engine.NewClient()
+	req := nano.NewClient()
 
 	// Get login page with the same client used for POST so cookies/session are shared.
 	body, err := req.Get(url)
@@ -278,13 +277,13 @@ func testFromPost() {
 		return
 	}
 
-	scrape, err := engine.InitDocument(body)
+	scrape, err := nano.InitDocument(body)
 	if err != nil {
 		fmt.Println("Error parsing login page:", err)
 		return
 	}
 
-	params := []*engine.Attribute{{Key: "name", Value: "_token"}}
+	params := []*nano.Attribute{{Key: "name", Value: "_token"}}
 	tokenInput := scrape.FindFirst("input", params)
 	if tokenInput.Name == "" {
 		fmt.Println("CSRF token input not found")
@@ -326,7 +325,7 @@ func testFromPost() {
 		return
 	}
 
-	scrape, err3 := engine.InitDocument(body)
+	scrape, err3 := nano.InitDocument(body)
 	if err3 != nil {
 		fmt.Println("Error parsing companies page:", err3)
 		return
@@ -384,8 +383,8 @@ func checkIP() {
 
 	fmt.Println(proxy1URL, " ", proxy2URL)
 
-	// Assuming 'engine' is your custom internal package
-	request := engine.NewClient()
+	// Assuming 'nano' is your custom internal package
+	request := nano.NewClient()
 	request.ProxyRotator(publicProxies...)
 
 	requestsCount := 4
@@ -437,7 +436,7 @@ func ScrapeTargetWithProxies() {
 	target := "https://example.com"
 
 	// 1. Initialize your custom HTTP client wrapper
-	client := engine.NewClient()
+	client := nano.NewClient()
 
 	// 2. Attach your proxy list using the ProxyRotator method.
 	// This automatically configures the internal Go http.Transport to cycle proxies safely.
@@ -454,7 +453,7 @@ func ScrapeTargetWithProxies() {
 
 	// 4. Pass the streaming data directly into the HTML Parser.
 	// InitDocument automatically reads from the io.Reader stream.
-	rootTag, err := engine.InitDocument(responseStream)
+	rootTag, err := nano.InitDocument(responseStream)
 	if err != nil {
 		log.Fatalf("❌ Failed to parse HTML content: %v", err)
 	}
@@ -470,7 +469,7 @@ func ScrapeTargetWithProxies() {
 
 	// Stream and print all links found on the page using a callback
 	fmt.Println("🔗 Listing all links found on the page:")
-	rootTag.Find("a", nil, func(linkTag *engine.Tag) {
+	rootTag.Find("a", nil, func(linkTag *nano.Tag) {
 		// You can access link attributes via linkTag.Attrs
 		fmt.Printf("   Found link element: %s\n", linkTag.Name)
 	})

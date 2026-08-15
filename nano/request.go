@@ -1,4 +1,4 @@
-package engine
+package nano
 
 import (
 	"bytes"
@@ -51,24 +51,20 @@ func (c *Client) ProxyRotator(proxies ...string) error {
 	return nil
 }
 
-// Execute is the single core function that handles all requests (GET, POST, etc.)
 func (c *Client) Execute(method, targetURL string, body io.Reader, extraHeaders ...map[string]string) (io.Reader, error) {
 	req, err := http.NewRequest(method, targetURL, body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	// 1. Isolate headers per request from the base client configuration
 	req.Header = c.BaseHeader.Clone()
 
-	// 2. Inject extra operational headers passed from other methods
 	if len(extraHeaders) > 0 && extraHeaders[0] != nil {
 		for k, v := range extraHeaders[0] {
 			req.Header.Set(k, v)
 		}
 	}
 
-	// 3. Apply default fallbacks if they aren't already set
 	setDefaultHeader(req.Header, "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0 Safari/537.36")
 	setDefaultHeader(req.Header, "Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
 	setDefaultHeader(req.Header, "Accept-Language", "en-US,en;q=0.5")
@@ -91,13 +87,10 @@ func (c *Client) Execute(method, targetURL string, body io.Reader, extraHeaders 
 	return buf, nil
 }
 
-// Get handles standard HTTP GET requests.
-// It passes nil as the body to the primary Execute pipeline.
 func (c *Client) Get(targetURL string) (io.Reader, error) {
 	return c.Execute(http.MethodGet, targetURL, nil)
 }
 
-// SendJSON pipes payloads directly through the centralized Execute funnel
 func (c *Client) SendJSON(method, targetURL string, payload any) (io.Reader, error) {
 	jsonValue, err := json.Marshal(payload)
 	if err != nil {
@@ -109,7 +102,6 @@ func (c *Client) SendJSON(method, targetURL string, payload any) (io.Reader, err
 	})
 }
 
-// SendForm pipes payloads directly through the centralized Execute funnel
 func (c *Client) SendForm(method, targetURL string, payload map[string]string) (io.Reader, error) {
 	formData := url.Values{}
 	for key, val := range payload {
@@ -127,7 +119,6 @@ func setDefaultHeader(h http.Header, key, value string) {
 	}
 }
 
-// CookiesFor retrieves stored cookies for a specific target URL.
 func (c *Client) CookiesFor(rawURL string) []*http.Cookie {
 	if c == nil || c.client == nil || c.client.Jar == nil || rawURL == "" {
 		return nil

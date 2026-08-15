@@ -1,6 +1,6 @@
 # nano-scrape Benchmark Report
 
-This document records the performance of the Tag engine functions.
+This document records the performance of the Tag nano functions.
 
 ## Methodology
 
@@ -22,4 +22,4 @@ This document records the performance of the Tag engine functions.
 
 - **Lazy Loading**: `Select` and `FindFirst` use `limit=1` to stop tree traversal early.
 - **Memory Reuse**: We minimize intermediate slice allocations by using callbacks where possible.
-- **CSS Parser**: Powered by `cascadia`, but optimized with our internal `traverse` engine.
+- **CSS Parser**: Powered by `cascadia`, but optimized with our internal `traverse` nano.

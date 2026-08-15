@@ -1,4 +1,4 @@
-package engine
+package nano
 
 import (
 	"fmt"
@@ -11,7 +11,6 @@ import (
 func (t *Tag) getNodeStrings(n *html.Node) string {
 	nodeStrings := []string{}
 
-	// We force recursion here to ensure we get all nested text
 	originalRecurse := t.recurse
 	t.recurse = true
 	defer func() { t.recurse = originalRecurse }()

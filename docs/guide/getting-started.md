@@ -15,12 +15,12 @@ package main
 
 import (
     "fmt"
-    "github.com/halas77/nano-scrape/engine"
+    "github.com/halas77/nano-scrape/nano"
 )
 
 func main() {
     // Load an HTML document (local string or remote URL)
-    doc, err := engine.InitDocument(`<html><body><div class="price">$199.99</div></body></html>`)
+    doc, err := nano.InitDocument(`<html><body><div class="price">$199.99</div></body></html>`)
     if err != nil { panic(err) }
 
     // Use a CSS‑like selector to extract the price
