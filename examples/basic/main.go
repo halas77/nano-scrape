@@ -9,8 +9,8 @@ import (
 	"net"
 	"strings"
 
+	"github.com/armon/go-socks5"
 	"github.com/halas77/nano-scrape/nano"
-	"github.com/things-go/go-socks5"
 )
 
 func main() {
@@ -400,11 +400,10 @@ func checkIP() {
 		proxies = append(proxies, proxyURL)
 	}
 
-	fmt.Println(proxy1URL, " ", proxy2URL)
+	fmt.Println(proxies)
 
-	// Assuming 'nano' is your custom internal package
 	request := nano.NewClient()
-	request.ProxyRotator(publicProxies...)
+	request.ProxyRotator(proxies...)
 
 	requestsCount := 8
 	for i := range requestsCount {
@@ -433,14 +432,12 @@ func checkIP() {
 			return
 		}
 
-		fmt.Printf("[Req %d] ✅ Laravel saw client IP: %s | Port: %d | Matches proxy list? %v\n",
-			i, laravelData.IP, laravelData.Port)
+		fmt.Printf("[Req %d] Laravel saw client IP: %s | Port: %s Matches proxy list? \n",
+			i, laravelData.Data.IP, laravelData.Data.Port)
 
-		// 4. Extract the client IP from the struct and display it
-		fmt.Printf("[Req %d] ✅ Success! Server detected your proxy IP as: %s\n", i, target.Origin)
 	}
 
-	fmt.Println("🏁 Test finished.")
+	fmt.Println("Test finished.")
 }
 
 func ScrapeTargetWithProxies() {
