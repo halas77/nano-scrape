@@ -1,4 +1,4 @@
-package engine
+package nano
 
 import (
 	"bytes"
@@ -51,7 +51,6 @@ func (c *Client) ProxyRotator(proxies ...string) error {
 	return nil
 }
 
-// Execute is the single core function that handles all requests (GET, POST, etc.)
 func (c *Client) Execute(method, targetURL string, body io.Reader, extraHeaders ...map[string]string) (io.Reader, error) {
 	req, err := http.NewRequest(method, targetURL, body)
 	if err != nil {

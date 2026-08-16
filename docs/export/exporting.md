@@ -195,7 +195,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/halas77/nano-scrape/engine"
+	"github.com/halas77/nano-scrape/nano"
 )
 
 func main() {
@@ -215,7 +215,7 @@ func main() {
 	`
 
 	// 1. Initialize the document
-	doc, err := engine.InitDocument(htmlContent)
+	doc, err := nano.InitDocument(htmlContent)
 	if err != nil {
 		log.Fatalf("Failed to initialize document: %v", err)
 	}
@@ -240,7 +240,7 @@ func main() {
 	mappedData := cards.Map(mapping)
 
 	// 5. Convert mapped data to a Markdown table string and print it
-	mdTable, err := engine.ExportMD(mappedData)
+	mdTable, err := nano.ExportMD(mappedData)
 	if err != nil {
 		log.Fatalf("Failed to export to Markdown: %v", err)
 	}
@@ -248,13 +248,13 @@ func main() {
 	fmt.Println(mdTable)
 
 	// 6. Write mapped data directly to files
-	err = engine.WriteMappedJSON("products.json", mappedData)
+	err = nano.WriteMappedJSON("products.json", mappedData)
 	if err != nil {
 		log.Fatalf("Failed to write JSON file: %v", err)
 	}
 	fmt.Println("Successfully wrote products.json")
 
-	err = engine.WriteMappedMD("products.md", mappedData)
+	err = nano.WriteMappedMD("products.md", mappedData)
 	if err != nil {
 		log.Fatalf("Failed to write Markdown file: %v", err)
 	}

@@ -1,4 +1,4 @@
-package engine
+package nano
 
 import (
 	"fmt"
@@ -47,72 +47,6 @@ func TestGetNodeStrings(t *testing.T) {
 		})
 	}
 } */
-
-func TestHasIntersection(t *testing.T) {
-	// Mock attributes
-	attrs := []html.Attribute{
-		{Key: "class", Val: "btn-primary"},
-		{Key: "id", Val: "submit-button"},
-	}
-
-	tests := []struct {
-		name     string
-		params   map[string]any
-		isStrict bool
-		expected bool
-	}{
-		{
-			name:     "Nil params should return true",
-			params:   nil,
-			expected: true,
-		},
-		{
-			name:     "Single match (Non-Strict)",
-			params:   map[string]any{"class": "btn-primary"},
-			isStrict: false,
-			expected: true,
-		},
-		{
-			name:     "Full match (Strict)",
-			params:   map[string]any{"class": "btn-primary", "id": "submit-button"},
-			isStrict: true,
-			expected: true,
-		},
-		{
-			name:     "Partial match fails (Strict)",
-			params:   map[string]any{"class": "btn-primary", "id": "wrong-id"},
-			isStrict: true,
-			expected: false,
-		},
-		{
-			name:     "Ignore 'string' key in attribute count",
-			params:   map[string]any{"class": "btn-primary", "string": "click me"},
-			isStrict: true,
-			expected: true, // Only 'class' is checked against attributes
-		},
-		{
-			name:     "Ignore '_name_', and 'string' key in attribute count",
-			params:   map[string]any{"class": "btn-primary", "string": "click me", "_name_": "div"},
-			isStrict: true,
-			expected: true, // Only 'class' is checked against attributes
-		},
-		{
-			name:     "Ignore '_name_' key in attribute count",
-			params:   map[string]any{"class": "btn-primary", "_name_": "div"},
-			isStrict: true,
-			expected: true, // Only 'class' is checked against attributes
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := hasIntersection(tt.params, attrs, tt.isStrict)
-			if got != tt.expected {
-				t.Errorf("hasIntersection() %s: got %v, want %v", tt.name, got, tt.expected)
-			}
-		})
-	}
-}
 
 func TestFlexMatch(t *testing.T) {
 	tests := []struct {

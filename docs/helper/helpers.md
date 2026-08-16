@@ -43,7 +43,7 @@ func main() {
     </article>
     `
 
-	scrape, err := engine.InitDocument(input)
+	scrape, err := nano.InitDocument(input)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -108,7 +108,7 @@ func main() {
     </article>
     `
 
-	scrape, err := engine.InitDocument(input)
+	scrape, err := nano.InitDocument(input)
 	if err != nil {
 		log.Fatal(err)
 	}

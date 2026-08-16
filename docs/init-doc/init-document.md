@@ -54,14 +54,14 @@ func main() {
 	// Example 1: Parsing HTML from a local string variable
 	htmlData := `<div id="main" class="content">Hello World</div>`
 
-	page1, err := engine.InitDocument(htmlData)
+	page1, err := nano.InitDocument(htmlData)
 	if err != nil {
 		log.Fatalf("Error parsing string: %v", err)
 	}
 	fmt.Println("Parsed local tag:", page1.Name) // Outputs: "div"
 
 	// Example 2: Parsing HTML directly from a live website URL
-	page2, err := engine.LoadDocument("https://example.com")
+	page2, err := nano.LoadDocument("https://example.com")
 	if err != nil {
 		log.Fatalf("Error loading URL: %v", err)
 	}

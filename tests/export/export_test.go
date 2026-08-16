@@ -8,18 +8,18 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/halas77/nano-scrape/engine"
+	"github.com/halas77/nano-scrape/nano"
 )
 
 // loadHTML initializes a Tag from the local test_data.html file.
-func loadHTML(t *testing.T) *engine.Tag {
+func loadHTML(t *testing.T) *nano.Tag {
 	t.Helper()
 	path := "test_data.html"
 	data, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("Failed to read test_data.html: %v", err)
 	}
-	tag, err := engine.InitDocument(string(data))
+	tag, err := nano.InitDocument(string(data))
 	if err != nil {
 		t.Fatalf("Failed to init document: %v", err)
 	}
@@ -39,7 +39,7 @@ func TestDirectExport(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ToJSON failed: %v", err)
 	}
-	var exports []engine.TagExport
+	var exports []nano.TagExport
 	if err := json.Unmarshal(jsonBytes, &exports); err != nil {
 		t.Fatalf("Failed to unmarshal ToJSON output: %v", err)
 	}
@@ -189,7 +189,7 @@ func TestMappedExport(t *testing.T) {
 	}
 
 	// 1. ExportJSON Validation
-	jsonBytes, err := engine.ExportJSON(mappedData)
+	jsonBytes, err := nano.ExportJSON(mappedData)
 	if err != nil {
 		t.Fatalf("ExportJSON failed: %v", err)
 	}
@@ -202,7 +202,7 @@ func TestMappedExport(t *testing.T) {
 	}
 
 	// 2. ExportCSV Validation
-	csvStr, err := engine.ExportCSV(mappedData)
+	csvStr, err := nano.ExportCSV(mappedData)
 	if err != nil {
 		t.Fatalf("ExportCSV failed: %v", err)
 	}
@@ -226,7 +226,7 @@ func TestMappedExport(t *testing.T) {
 	}
 
 	// 3. ExportMD Validation
-	mdStr, err := engine.ExportMD(mappedData)
+	mdStr, err := nano.ExportMD(mappedData)
 	if err != nil {
 		t.Fatalf("ExportMD failed: %v", err)
 	}
@@ -250,7 +250,7 @@ func TestMappedExport(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	tmpJSON := filepath.Join(tmpDir, "mapped_products.json")
-	if err := engine.WriteMappedJSON(tmpJSON, mappedData); err != nil {
+	if err := nano.WriteMappedJSON(tmpJSON, mappedData); err != nil {
 		t.Fatalf("WriteMappedJSON failed: %v", err)
 	}
 	if fileBytes, err := os.ReadFile(tmpJSON); err != nil {
@@ -260,7 +260,7 @@ func TestMappedExport(t *testing.T) {
 	}
 
 	tmpCSV := filepath.Join(tmpDir, "mapped_products.csv")
-	if err := engine.WriteMappedCSV(tmpCSV, mappedData); err != nil {
+	if err := nano.WriteMappedCSV(tmpCSV, mappedData); err != nil {
 		t.Fatalf("WriteMappedCSV failed: %v", err)
 	}
 	if fileBytes, err := os.ReadFile(tmpCSV); err != nil {
@@ -270,7 +270,7 @@ func TestMappedExport(t *testing.T) {
 	}
 
 	tmpMD := filepath.Join(tmpDir, "mapped_products.md")
-	if err := engine.WriteMappedMD(tmpMD, mappedData); err != nil {
+	if err := nano.WriteMappedMD(tmpMD, mappedData); err != nil {
 		t.Fatalf("WriteMappedMD failed: %v", err)
 	}
 	if fileBytes, err := os.ReadFile(tmpMD); err != nil {
@@ -282,7 +282,7 @@ func TestMappedExport(t *testing.T) {
 
 // TestEmptyCollections tests how empty collections or empty mapped slices are exported.
 func TestEmptyCollections(t *testing.T) {
-	emptyTags := &engine.Tags{}
+	emptyTags := &nano.Tags{}
 
 	// Direct export on empty tag collection
 	exports := emptyTags.Export()
@@ -317,7 +317,7 @@ func TestEmptyCollections(t *testing.T) {
 	// Mapped export on empty mapped data
 	var emptyMapped []map[string]string
 
-	jsonBytes2, err := engine.ExportJSON(emptyMapped)
+	jsonBytes2, err := nano.ExportJSON(emptyMapped)
 	if err != nil {
 		t.Fatalf("empty ExportJSON failed: %v", err)
 	}
@@ -325,7 +325,7 @@ func TestEmptyCollections(t *testing.T) {
 		t.Errorf("Expected empty mapped JSON to serialize as 'null', got %q", string(jsonBytes2))
 	}
 
-	csvStr2, err := engine.ExportCSV(emptyMapped)
+	csvStr2, err := nano.ExportCSV(emptyMapped)
 	if err != nil {
 		t.Fatalf("empty ExportCSV failed: %v", err)
 	}
@@ -333,7 +333,7 @@ func TestEmptyCollections(t *testing.T) {
 		t.Errorf("Expected empty mapped CSV, got %q", csvStr2)
 	}
 
-	mdStr2, err := engine.ExportMD(emptyMapped)
+	mdStr2, err := nano.ExportMD(emptyMapped)
 	if err != nil {
 		t.Fatalf("empty ExportMD failed: %v", err)
 	}

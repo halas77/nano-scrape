@@ -5,18 +5,18 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net"
 	"strings"
 
-	"github.com/armon/go-socks5"
-	"github.com/halas77/nano-scrape/engine"
+	"github.com/halas77/nano-scrape/nano"
+	"github.com/things-go/go-socks5"
 )
 
 func main() {
-	checkIP()
-
+	// checkIP()
 	// requestTest()
-	// stringTest()
+	stringTest()
 	// exportDemo()
 	// stringTest()
 
@@ -42,12 +42,12 @@ func requestTest() {
 	</article>
 	`
 	input = "http://127.0.0.1:5501/examples/basic/index.html"
-	scrape, err := engine.LoadDocument(input)
+	scrape, err := nano.LoadDocument(input)
 	fmt.Println(scrape.FindFirst("article").Print())
 
 	// fmt.Println(scrape)
 
-	// scrape, err := engine.InitDocument(input)
+	// scrape, err := nano.InitDocument(input)
 
 	// fmt.Println(scrape.FindFirst("main").Print())
 
@@ -56,7 +56,7 @@ func requestTest() {
 		return
 	}
 
-	// params := []*engine.Attribute{
+	// params := []*nano.Attribute{
 	// 	{
 	// 		Key:   "class",
 	// 		Value: "details",
@@ -66,11 +66,11 @@ func requestTest() {
 	// main := scrape.FindAll("div", params)
 	// fmt.Println(main.Print())
 
-	// scrape.Find("div", params, func(t engine.Tag) {
+	// scrape.Find("div", params, func(t nano.Tag) {
 	// 	fmt.Println(t.Print())
 	// })
 
-	// scrape.Query(".price-tag", func(t *engine.Tag) {
+	// scrape.Query(".price-tag", func(t *nano.Tag) {
 	// 	fmt.Println(t.Print())
 	// })
 
@@ -104,7 +104,7 @@ func stringTest() {
 			</div>
 		`
 
-	root, err := engine.InitDocument(input)
+	root, err := nano.InitDocument(input)
 
 	if err != nil {
 		fmt.Println("Error parsing HTML:", err)
@@ -156,7 +156,7 @@ func exportDemo() {
 			</div>
 		`
 
-	root, err := engine.InitDocument(input)
+	root, err := nano.InitDocument(input)
 	if err != nil {
 		fmt.Println("Error parsing HTML:", err)
 		return
@@ -176,7 +176,7 @@ func exportDemo() {
 	mappedData := products.Map(mapping)
 
 	// 1. Export structured data to JSON
-	jsonBytes, err := engine.ExportJSON(mappedData)
+	jsonBytes, err := nano.ExportJSON(mappedData)
 	if err != nil {
 		fmt.Println("Error exporting JSON:", err)
 		return
@@ -184,7 +184,7 @@ func exportDemo() {
 	fmt.Println("Structured Mapped JSON:\n", string(jsonBytes))
 
 	// 2. Export structured data to CSV
-	csvStr, err := engine.ExportCSV(mappedData)
+	csvStr, err := nano.ExportCSV(mappedData)
 	if err != nil {
 		fmt.Println("Error exporting CSV:", err)
 		return
@@ -192,7 +192,7 @@ func exportDemo() {
 	fmt.Println("Structured Mapped CSV:\n", csvStr)
 
 	// 3. Export structured data to Markdown
-	mdStr, err := engine.ExportMD(mappedData)
+	mdStr, err := nano.ExportMD(mappedData)
 	if err != nil {
 		fmt.Println("Error exporting MD:", err)
 		return
@@ -200,21 +200,21 @@ func exportDemo() {
 	fmt.Println("Structured Mapped Markdown Table:\n", mdStr)
 
 	// 4. Write them directly to files
-	err = engine.WriteMappedJSON("scraped_products.json", mappedData)
+	err = nano.WriteMappedJSON("scraped_products.json", mappedData)
 	if err != nil {
 		fmt.Println("Error writing JSON file:", err)
 	} else {
 		fmt.Println("Successfully wrote structured data to: scraped_products.json")
 	}
 
-	err = engine.WriteMappedCSV("scraped_products.csv", mappedData)
+	err = nano.WriteMappedCSV("scraped_products.csv", mappedData)
 	if err != nil {
 		fmt.Println("Error writing CSV file:", err)
 	} else {
 		fmt.Println("Successfully wrote structured data to: scraped_products.csv")
 	}
 
-	err = engine.WriteMappedMD("scraped_products.md", mappedData)
+	err = nano.WriteMappedMD("scraped_products.md", mappedData)
 	if err != nil {
 		fmt.Println("Error writing MD file:", err)
 	} else {
@@ -249,7 +249,7 @@ func proxyTester() {
 	}
 
 	input := "http://127.0.0.1:8000/home"
-	request := engine.NewClient()
+	request := nano.NewClient()
 
 	request.ProxyRotator(publicProxies...)
 	requestsCount := 4
@@ -269,7 +269,7 @@ func proxyTester() {
 
 func testFromPost() {
 	url := "http://127.0.0.1:8000/login"
-	req := engine.NewClient()
+	req := nano.NewClient()
 
 	// Get login page with the same client used for POST so cookies/session are shared.
 	body, err := req.Get(url)
@@ -278,13 +278,13 @@ func testFromPost() {
 		return
 	}
 
-	scrape, err := engine.InitDocument(body)
+	scrape, err := nano.InitDocument(body)
 	if err != nil {
 		fmt.Println("Error parsing login page:", err)
 		return
 	}
 
-	params := []*engine.Attribute{{Key: "name", Value: "_token"}}
+	params := []*nano.Attribute{{Key: "name", Value: "_token"}}
 	tokenInput := scrape.FindFirst("input", params)
 	if tokenInput.Name == "" {
 		fmt.Println("CSRF token input not found")
@@ -326,7 +326,7 @@ func testFromPost() {
 		return
 	}
 
-	scrape, err3 := engine.InitDocument(body)
+	scrape, err3 := nano.InitDocument(body)
 	if err3 != nil {
 		fmt.Println("Error parsing companies page:", err3)
 		return
@@ -400,10 +400,11 @@ func checkIP() {
 		proxies = append(proxies, proxyURL)
 	}
 
-	fmt.Println(proxies)
+	fmt.Println(proxy1URL, " ", proxy2URL)
 
-	request := engine.NewClient()
-	request.ProxyRotator(proxies...)
+	// Assuming 'nano' is your custom internal package
+	request := nano.NewClient()
+	request.ProxyRotator(publicProxies...)
 
 	requestsCount := 8
 	for i := range requestsCount {
@@ -432,10 +433,59 @@ func checkIP() {
 			return
 		}
 
-		fmt.Printf("[Req %d] Laravel saw client IP: %s | Port: %s Matches proxy list? \n",
-			i, laravelData.Data.IP, laravelData.Data.Port)
+		fmt.Printf("[Req %d] ✅ Laravel saw client IP: %s | Port: %d | Matches proxy list? %v\n",
+			i, laravelData.IP, laravelData.Port)
 
+		// 4. Extract the client IP from the struct and display it
+		fmt.Printf("[Req %d] ✅ Success! Server detected your proxy IP as: %s\n", i, target.Origin)
 	}
 
-	fmt.Println("Test finished.")
+	fmt.Println("🏁 Test finished.")
+}
+
+func ScrapeTargetWithProxies() {
+	proxies := []string{
+		"http://proxy-us.example.com:3128",
+		"http://proxy-eu.example.com:3128",
+	}
+	target := "https://example.com"
+
+	// 1. Initialize your custom HTTP client wrapper
+	client := nano.NewClient()
+
+	// 2. Attach your proxy list using the ProxyRotator method.
+	// This automatically configures the internal Go http.Transport to cycle proxies safely.
+	client.ProxyRotator(proxies...)
+
+	fmt.Println("🚀 Request pipeline initialized with proxy rotation...")
+
+	// 3. Execute a network request to pull down the webpage data stream.
+	// This returns an io.Reader (specifically a *bytes.Buffer), safely closing the network socket internally.
+	responseStream, err := client.Get(target)
+	if err != nil {
+		log.Fatalf("❌ Network request failed: %v", err)
+	}
+
+	// 4. Pass the streaming data directly into the HTML Parser.
+	// InitDocument automatically reads from the io.Reader stream.
+	rootTag, err := nano.InitDocument(responseStream)
+	if err != nil {
+		log.Fatalf("❌ Failed to parse HTML content: %v", err)
+	}
+
+	fmt.Printf("✅ Successfully fetched and parsed: %s (Root Tag: %s)\n", target, rootTag.Name)
+
+	// 5. Use the Tag query functions to extract data from the document tree.
+	// Find the very first <h1> element on the page
+	firstHeading := rootTag.FindFirst("h1")
+	if firstHeading != nil {
+		fmt.Printf("🎯 First Heading found on page: %s\n", firstHeading.Name)
+	}
+
+	// Stream and print all links found on the page using a callback
+	fmt.Println("🔗 Listing all links found on the page:")
+	rootTag.Find("a", nil, func(linkTag *nano.Tag) {
+		// You can access link attributes via linkTag.Attrs
+		fmt.Printf("   Found link element: %s\n", linkTag.Name)
+	})
 }

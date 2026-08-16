@@ -21,7 +21,7 @@ Searches through the HTML document tree to find elements that match the specifie
 
 ```go
 // Process matching elements on the fly using a callback function
-page.Find("div", nil, func(matchedTag *engine.Tag) {
+page.Find("div", nil, func(matchedTag *nano.Tag) {
     // This block runs automatically every time a <div> is encountered
     fmt.Println("Streamed match found for tag:", matchedTag.Name)
 })
@@ -96,10 +96,10 @@ import (
 
 func main() {
 	// Assume 'scrape' is an HTML document already parsed via InitDocument or LoadDocument
-	scrape, _ := engine.LoadDocument("https://example.com")
+	scrape, _ := nano.LoadDocument("https://example.com")
 
 	// 1. Define the specific attributes you want to filter by
-	params := []*engine.Attribute{
+	params := []*nano.Attribute{
 		{
 			Key:   "class",
 			Value: "details",
@@ -116,7 +116,7 @@ func main() {
 
 ### `Find` `FindFirst` / `FindAll` with Text Filtering
 
-When you pass an `Attribute` with the special key `"string"`, the search engine start inspecting the direct plain text inside the tag itself.
+When you pass an `Attribute` with the special key `"string"`, the search nano start inspecting the direct plain text inside the tag itself.
 
 - **Exact Match Target:** It evaluates the immediate text children belonging to that tag.
 - **Strict Depth Control:** It intentionally ignores text contained inside nested children elements (like a `<span>` or `<strong>` inside a `<div>`). It only looks at the string fragments that belong to the parent tag directly.
@@ -137,10 +137,10 @@ func main() {
 	// Sample HTML structure
 	input := `<div class="details"> Hello <span> Span's Inner text </span> World </div>`
 
-	scrape, _ := engine.InitDocument(input)
+	scrape, _ := nano.InitDocument(input)
 
 	// Configure the parameter to look for the raw string "World" inside a tag
-	params := []*engine.Attribute{
+	params := []*nano.Attribute{
 		{
 			Key:   "string",
 			Value: "World",
@@ -162,7 +162,7 @@ func main() {
 
 ## Combining HTML Attribute and Text Filtering
 
-You can combine standard HTML attributes (like `class` or `id`) with the special `"string"` key inside the same parameter slice. When you pass multiple attributes, the search engine treats them as an **AND** condition. An HTML tag must match **both** the structural attributes and contain the specified immediate text to be returned.
+You can combine standard HTML attributes (like `class` or `id`) with the special `"string"` key inside the same parameter slice. When you pass multiple attributes, the search nano treats them as an **AND** condition. An HTML tag must match **both** the structural attributes and contain the specified immediate text to be returned.
 
 #### `💡 Usage Example`
 
@@ -182,10 +182,10 @@ func main() {
 		<div class="sidebar"> Hello <span> Span's Inner text </span> World </div>
 	`
 
-	scrape, _ := engine.InitDocument(input)
+	scrape, _ := nano.InitDocument(input)
 
 	// Configure parameters to match: class="details" AND containing the text "World"
-	params := []*engine.Attribute{
+	params := []*nano.Attribute{
 		{
 			Key:   "class",
 			Value: "details",

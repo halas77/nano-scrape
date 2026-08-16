@@ -69,7 +69,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/halas77/nano-scrape/engine"
+	"github.com/halas77/nano-scrape/nano"
 )
 
 func main() {
@@ -90,7 +90,7 @@ func main() {
 	`
 
 	// Step 1: Initialize the document
-	doc, err := engine.InitDocument(htmlContent)
+	doc, err := nano.InitDocument(htmlContent)
 	if err != nil {
 		panic(err)
 	}
@@ -119,7 +119,7 @@ func main() {
 
 	// Step 5: Use Select to iterate directly using a callback
 	fmt.Println("Iterating with Select callback:")
-	doc.Select(".product-item", func(item *engine.Tag) {
+	doc.Select(".product-item", func(item *nano.Tag) {
 		name := item.SelectFirst(".name").Text()
 		fmt.Println("Product Item:", name)
 	})
