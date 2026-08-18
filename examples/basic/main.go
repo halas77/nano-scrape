@@ -418,7 +418,7 @@ func checkIP() {
 			return
 		}
 
-		fmt.Printf("[Req %d] ✅ Laravel saw client IP: %s | Port: %d | Matches proxy list? %v\n",
+		fmt.Printf("[Req %d] ✅ Laravel saw client IP: %s | Port: %d\n",
 			i, laravelData.IP, laravelData.Port)
 
 		// 4. Extract the client IP from the struct and display it
