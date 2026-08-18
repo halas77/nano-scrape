@@ -63,9 +63,8 @@
           <span class="line-num">1</span>
           <span class="code-content">
             <span class="token var">doc</span><span class="token op">,</span>
-            <span class="token var">_</span> <span class="token op">:=</span>
-            <span class="token pkg">engine</span
-            ><span class="token punct">.</span
+            <span class="token var">_</span> <span class="token op">:= </span>
+            <span class="token pkg">nano</span><span class="token punct">.</span
             ><span class="token func">LoadDocument</span
             ><span class="token punct">(</span
             ><span class="token string">"https://example.com"</span
@@ -76,7 +75,7 @@
           <span class="line-num">2</span>
           <span class="code-content">
             <span class="token var">items</span>
-            <span class="token op">:=</span> <span class="token var">doc</span
+            <span class="token op"> :=</span> <span class="token var">doc</span
             ><span class="token punct">.</span
             ><span class="token func">SelectAll</span
             ><span class="token punct">(</span
@@ -87,7 +86,8 @@
         <div class="code-line">
           <span class="line-num">3</span>
           <span class="code-content">
-            <span class="token var">data</span> <span class="token op">:=</span>
+            <span class="token var">data</span>
+            <span class="token op"> := </span>
             <span class="token var">items</span
             ><span class="token punct">.</span
             ><span class="token func">Map</span
@@ -107,11 +107,10 @@
         <div class="code-line">
           <span class="line-num">4</span>
           <span class="code-content">
-            <span class="token pkg">engine</span
-            ><span class="token punct">.</span
+            <span class="token pkg">nano</span><span class="token punct">.</span
             ><span class="token func">WriteMappedJSON</span
             ><span class="token punct">(</span
-            ><span class="token string">"products.json"</span
+            ><span class="token string">"product-prices.json"</span
             ><span class="token punct">,</span>
             <span class="token var">data</span
             ><span class="token punct">)</span>
@@ -124,7 +123,7 @@
           <span class="pulse-dot"></span>
           <span class="status-text">Simple &amp; Expressive</span>
         </div>
-        <div class="speed-badge">⚡ 1.2ms benchmark</div>
+        <div class="speed-badge">~500µs benchmark</div>
       </div>
     </div>
   </div>
