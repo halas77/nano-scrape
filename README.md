@@ -20,3 +20,22 @@ Add **Nano Scrape** to your Go module using `go get`:
 go get github.com/halas77/nano-scrape
 
 ```
+## Contributing
+
+Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are greatly appreciated!
+
+Here is how you can contribute:
+
+* Fork the Project
+
+* Ways to help out:
+  * 🐛 Report Bugs: Open an issue describing the bug and steps to reproduce.
+
+  * 💡 Suggest Features: Have an idea? Open a feature request issue!
+
+  * 📖 Improve Documentation: Help fix typos or expand code examples.
+
+  * 🧪 Add Tests: Improve test coverage to keep the library reliable.
+
+  * ⭐ Show Your Support, 
+  If you find Nano Scrape helpful or use it in your projects, please consider giving it a Star ⭐️ on GitHub! It helps visibility and keeps the project growing.
