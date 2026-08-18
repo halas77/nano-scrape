@@ -167,7 +167,7 @@ func BenchmarkFindAll(b *testing.B) {
 		return
 	}
 
-	name := "div"
+	name := "span"
 	params := []*nano.Attribute{
 		{
 			Key:   "class",
