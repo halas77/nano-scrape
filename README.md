@@ -1,4 +1,4 @@
-# ⚡Nano Scrape
+# Nano Scrape
 
 ##  Overview
 
